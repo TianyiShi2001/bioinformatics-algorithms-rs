@@ -14,29 +14,37 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with rust-bio-edu.  If not, see <http://www.gnu.org/licenses/>.
+
+//! # Needleman-Wunsch Algorithm (2)
+//!
+//! Re-implement the Needleman-Wunsch algorithm to improve performance
+//!
+//! # Learning Outcomes
+//!
+//! - Benchmarking in Rust
+//! - Strategies to improve the performace of a program
+//!
 #![allow(non_snake_case)]
 use super::GlobalAlign;
-use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFn, Matrix, Score, Seq};
+use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFn, Score, Seq};
+use crate::utils::matrix::Matrix;
 
-/// Needleman-Wunsch
-
-pub struct Aligner<'a> {
-    x: Seq<'a>,
-    y: Seq<'a>,
-    S: Matrix<Score>,
-    T: Matrix<AlignmentOperation>,
-    match_fn: MatchFn,
-    gap_penalty: Score,
+/// Needleman-Wunsch Aligner.
+///
+pub struct Aligner {
+    pub match_fn: MatchFn,
+    pub gap_penalty: Score,
 }
 
-impl<'a> GlobalAlign<'a> for Aligner<'a> {
-    fn global(mut self) -> Alignment<'a> {
-        let (m, n) = (self.x.len(), self.y.len());
-        self.fill_matrices();
-        let operations = self.traceback();
+impl GlobalAlign for Aligner {
+    fn global<'a>(&self, x: Seq<'a>, y: Seq<'a>) -> Alignment<'a> {
+        let (m, n) = (x.len(), y.len());
+        let (mut S, mut T) = self.init_matrices(m, n);
+        self.fill_matrices(&mut S, &mut T, x, y);
+        let operations = self.traceback(&T);
         Alignment {
-            x: self.x,
-            y: self.y,
+            x,
+            y,
             xstart: 0,
             ystart: 0,
             xend: m,
@@ -47,43 +55,39 @@ impl<'a> GlobalAlign<'a> for Aligner<'a> {
     }
 }
 
-impl<'a> Aligner<'a> {
-    pub fn new(x: Seq<'a>, y: Seq<'a>, match_fn: MatchFn, gap_penalty: Score) -> Self {
-        let (m, n) = (x.len(), y.len());
-        let (S, T) = Self::init_matrices(m, n, gap_penalty);
+impl<'a> Aligner {
+    pub fn new(match_fn: MatchFn, gap_penalty: Score) -> Self {
         Aligner {
-            x,
-            y,
-            S,
-            T,
             match_fn,
             gap_penalty,
         }
     }
-    fn init_matrices(
-        m: usize,
-        n: usize,
-        gap_penalty: Score,
-    ) -> (Matrix<Score>, Matrix<AlignmentOperation>) {
-        let mut S = vec![vec![0 as Score; n + 1]; m + 1];
-        let mut T = vec![vec![AlignmentOperation::Origin; n + 1]; m + 1];
+    pub fn init_matrices(&self, m: usize, n: usize) -> (Matrix<Score>, Matrix<AlignmentOperation>) {
+        let mut S = Matrix::fill(m + 1, n + 1, 0 as Score);
+        let mut T = Matrix::fill(m + 1, n + 1, AlignmentOperation::Origin);
         for j in 1..=n {
-            S[0][j] = gap_penalty * j as Score;
-            T[0][j] = AlignmentOperation::Insert;
+            S.set(0, j, self.gap_penalty * j as Score);
+            T.set(0, j, AlignmentOperation::Insert);
         }
         for i in 1..=m {
-            S[i][0] = gap_penalty * i as Score;
-            T[i][0] = AlignmentOperation::Delete;
+            S.set(i, 0, self.gap_penalty * i as Score);
+            T.set(i, 0, AlignmentOperation::Delete);
         }
         (S, T)
     }
-    fn fill_matrices(&mut self) {
-        for i in 1..=self.x.len() {
-            for j in 1..=self.y.len() {
-                let (xi, yj) = (self.x[i - 1], self.y[j - 1]);
-                let diag = self.S[i - 1][j - 1] + (self.match_fn)(xi, yj);
-                let up = self.S[i - 1][j] + self.gap_penalty;
-                let left = self.S[i][j - 1] + self.gap_penalty;
+    pub fn fill_matrices(
+        &self,
+        S: &mut Matrix<Score>,
+        T: &mut Matrix<AlignmentOperation>,
+        x: Seq,
+        y: Seq,
+    ) {
+        for i in 1..=x.len() {
+            for j in 1..=y.len() {
+                let (xi, yj) = (x[i - 1], y[j - 1]);
+                let diag = S.get(i - 1, j - 1) + (self.match_fn)(xi, yj);
+                let up = S.get(i - 1, j) + self.gap_penalty;
+                let left = S.get(i, j - 1) + self.gap_penalty;
                 let mut max_score = diag;
                 let mut operation = if xi == yj {
                     AlignmentOperation::Match
@@ -98,16 +102,16 @@ impl<'a> Aligner<'a> {
                     max_score = left;
                     operation = AlignmentOperation::Insert;
                 }
-                self.S[i][j] = max_score;
-                self.T[i][j] = operation;
+                S.set(i, j, max_score);
+                T.set(i, j, operation);
             }
         }
     }
-    fn traceback(&self) -> Vec<AlignmentOperation> {
-        let (mut i, mut j) = (self.x.len(), self.y.len());
+    pub fn traceback(&self, T: &Matrix<AlignmentOperation>) -> Vec<AlignmentOperation> {
+        let (mut i, mut j) = (T.nrow, T.ncol);
         let mut operations = Vec::<AlignmentOperation>::new();
         loop {
-            let o = self.T[i][j];
+            let o = T.get(i, j);
             match o {
                 AlignmentOperation::Match | AlignmentOperation::Mismatch => {
                     operations.push(o);

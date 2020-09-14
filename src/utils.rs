@@ -15,4 +15,4 @@
 // You should have received a copy of the GNU General Public License
 // along with rust-bio-edu.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod pairwise;
+pub mod matrix;

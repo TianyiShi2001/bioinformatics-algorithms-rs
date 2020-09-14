@@ -4,10 +4,22 @@ Bioinformatics Algorithms implemented in Rust **for bioinformatics learners**.
 
 ## TL;DR
 
+### Should I Read on?
+
+This repository is for those who want to seriously learn bioinformatics algorithms without learning C/C++
+
+### What Can I Learn?
+
+- Bioinformatics algorithms, from those "ancient" ones found only in textbooks to the state-of-the-art ones currently being used and discussed
+- You'll understand those algorithms, and be able to implement them by yourself.
+- **This is a very young project initiated on 2020-09-12 and maintained by an undergraduate student, so currently don't expect too much.**
+
+### Why Rust/What is Rust?
+
 - Simple programming languages such as Python, Ruby and Perl are popular among biologists. That's why BioPython, BioRuby and BioPerl are much popular than SeqAn (C++).
 - Python, Ruby and Perl are too slow for core algorithms in bioinformatics, and these algorithms are traditionally implemented in C/C++.
-- C/C++ is too difficult for biologists. Of those interested in learning (and improving) the internals of the bioinformatics tools they use, few take a step further to learn C/C++.
-- A young language called **Rust** turns out to be both simple and fast (as fast as C). Indeed, some algorithms implemented in **rust-bio** outperforms their counterparts in SeqAn.
+- C/C++ is difficult for many biologists. Of those interested in the internals of the bioinformatics tools they use, few take a step further to learn C/C++.
+- A young language called [**Rust**](https://www.rust-lang.org) turns out to be both simple and fast (as fast as C). Indeed, some algorithms implemented in [**rust-bio**](https://github.com/rust-bio/rust-bio) outperforms their counterparts in SeqAn.
 - Thus I believe Rust is the perfect language for bioinformatics. People who want to learn bioinformatics algorithms seriously should learn Rust.
 - This repository helps you to **learn** bioinformatics with Rust.
 - It is not just a bunch of code to be downloaded and run. It helps you to **learn** by guiding you through the steps to reach the final solution. Any special implementation details are thoroughly explained, and the only prerequisite is Chapters 1-14 of [The Book](https://doc.rust-lang.org/book/).
@@ -18,7 +30,7 @@ Bioinformatics algorithms and utilities are implemented in many programming lang
 
 Production-ready bioinformatics libraries (obviously) tend to provide only the most efficient algorithm for every problem in bioinformatics. It is only to a limited extent can their source code and documentation help learning bioinformatics properly.
 
-On the contrary, bioinformatics textbooks typically introduce readers to only a few historically important algorithms, which often do not represent the current most efficient solution. Take pairwise alignment for example:
+On the other hand, bioinformatics textbooks typically introduce readers to only a few historically important algorithms, which often do not represent the current most efficient solution. Take pairwise alignment for example:
 
 |       Author        |               features               | Jones & Pevzner (2004) | Sung (2010) |
 | :-----------------: | :----------------------------------: | :--------------------: | :---------: |
@@ -39,6 +51,7 @@ I learn bioinformatic not only from textbooks but also from articles, and I foun
 - Most solutions have corresponding original literature, and readers are encouraged to read them.
 - Comments in the source code will be verbose.
 - Clarity is more important than efficiency (although an optimised solution will be provided for each problem)
+- All functions, structs, etc. are made public so that you can play around with them easily, but it should be emphasized again that you should not depend on any part of this repository for your development. Use **rust-bio** instead.
 
 # Why Rust?
 
