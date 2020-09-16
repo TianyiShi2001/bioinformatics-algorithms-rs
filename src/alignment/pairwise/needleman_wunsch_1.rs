@@ -28,8 +28,9 @@
 //!
 #![allow(non_snake_case)]
 use super::GlobalAlign;
-use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFn, Score, Seq};
+use super::{Alignment, AlignmentMode, AlignmentOperation, Score, Seq};
 type Matrix<T> = Vec<Vec<T>>;
+type MatchFn = fn(u8, u8) -> Score;
 
 /// Needleman-Wunsch Aligner.
 ///

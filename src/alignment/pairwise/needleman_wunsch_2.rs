@@ -88,8 +88,9 @@
 //! # Conclusion
 #![allow(non_snake_case)]
 use super::GlobalAlign;
-use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFn, Score, Seq};
+use super::{Alignment, AlignmentMode, AlignmentOperation, Score, Seq};
 use crate::utils::matrix::Matrix;
+type MatchFn = fn(u8, u8) -> Score;
 
 /// Needleman-Wunsch Aligner.
 pub struct Aligner {

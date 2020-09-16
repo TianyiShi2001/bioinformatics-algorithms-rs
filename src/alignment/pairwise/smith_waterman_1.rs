@@ -24,7 +24,7 @@
 //! - The principle of the Smith-Waterman local alignment algorithm, its time and space complexity
 #![allow(non_snake_case)]
 use super::LocalAlign;
-use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFn, Score, Seq};
+use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFunc, Score, Seq, MatchParams};
 use crate::utils::matrix::Matrix;
 
 /// Needleman-Wunsch Aligner.
@@ -34,12 +34,12 @@ use crate::utils::matrix::Matrix;
 /// - `match_fn`: a function pointer to a function, which takes two characters as `u8` as arguments and computes
 ///    the substitution score between them.
 /// - `gap_penalty`: the penalty for opening a gap; should be a negative integer
-pub struct Aligner {
-    pub match_fn: MatchFn,
+pub struct Aligner<F: MatchFunc> {
+    pub match_fn: F,
     pub gap_penalty: Score,
 }
 
-impl LocalAlign for Aligner {
+impl<F: MatchFunc> LocalAlign for Aligner<F> {
     /// `S`: a matrix containing alignment scores. `S[i][j]` is the best alignment score between `x[0..i]` and `y[..j]`.
     /// `T`: a matrix containing alignment operations (or "directions", in the context of a matrix).
     fn local<'a>(&self, x: Seq<'a>, y: Seq<'a>) -> Alignment<'a> {
@@ -62,8 +62,8 @@ impl LocalAlign for Aligner {
     }
 }
 
-impl<'a> Aligner {
-    pub fn new(match_fn: MatchFn, gap_penalty: Score) -> Self {
+impl<F: MatchFunc> Aligner<F> {
+    pub fn new(match_fn: F, gap_penalty: Score) -> Self {
         Aligner {
             match_fn,
             gap_penalty,
@@ -94,7 +94,7 @@ impl<'a> Aligner {
         for i in 1..=x.len() {
             for j in 1..=y.len() {
                 let (xi, yj) = (x[i - 1], y[j - 1]);
-                let diag = S.get(i - 1, j - 1) + (self.match_fn)(xi, yj);
+                let diag = S.get(i - 1, j - 1) + self.match_fn.score(xi, yj);
                 let up = S.get(i - 1, j) + self.gap_penalty;
                 let left = S.get(i, j - 1) + self.gap_penalty;
                 let mut max_score = diag;
@@ -165,3 +165,13 @@ impl<'a> Aligner {
         (max_score, max_coords)
     }
 }
+
+impl Aligner<MatchParams> {
+    pub fn from_scores(match_score: Score, mismatch_score: Score, gap_penalty: Score) -> Self {
+        Aligner {
+            match_fn: MatchParams::new(match_score, mismatch_score),
+            gap_penalty
+        }
+    }
+}
+

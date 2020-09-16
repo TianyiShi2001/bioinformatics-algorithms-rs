@@ -15,6 +15,12 @@
 // You should have received a copy of the GNU General Public License
 // along with rust-bio-edu.  If not, see <http://www.gnu.org/licenses/>.
 
+//! A simple implementation of a matrix, used by naive implementations of pairwise alignment.
+//! 
+//! Typically, you initilize an empty $m \times n$ matrix with `Matrix::with_capacity(m, n)` and then push the values row by row with `.push(v)`. You
+//! can also initialize a matrix filled with a constant value by `Matrix::fill(m, n, v)`. Then, you can get and set the value at a given index $(i, j)$ by 
+//! `.get(i, j)` and `.set(i, j, v)`, respectively.
+
 use std::default::Default;
 use std::fmt;
 
