@@ -14,6 +14,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with rust-bio-edu.  If not, see <http://www.gnu.org/licenses/>.
-
-pub mod matrix;
-pub type TextSlice<'a> = &'a [u8];
+pub struct Aligner {
+    pub match_fn: MatchFn,
+    pub gap_penalty: Score,
+}
