@@ -14,7 +14,35 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with rust-bio-edu.  If not, see <http://www.gnu.org/licenses/>.
-pub struct Aligner {
-    pub match_fn: MatchFn,
-    pub gap_penalty: Score,
+#![allow(non_snake_case)]
+use super::LocalAlign;
+use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFunc, Score, Seq, MatchParams};
+use crate::utils::matrix::Matrix;
+
+/// Gotoh Aligner.
+///
+/// # Fields
+///
+/// - `match_fn`: a function pointer to a function, which takes two characters as `u8` as arguments and computes
+///    the substitution score between them.
+/// - `gap_penalty`: the penalty for opening a gap; should be a negative integer
+pub struct Aligner<F: MatchFunc> {
+    pub match_fn: F,
+    pub gap_open: Score,
+    pub gap_extend: Score,
+    S: Matrix<Score>,
+    D: Matrix<Score>,
+    I: Matrix<Score>,
+    TS: Matrix<GotohTraceback>,
+    TD: Matrix<GotohTraceback>,
+    TI: Matrix<GotohTraceback>,
+}
+
+enum GotohTraceback {
+    Match,
+    Mismatch,
+    DeleteFromS,
+    DeleteFromD,
+    InsertFromS,
+    InsertFromI,
 }

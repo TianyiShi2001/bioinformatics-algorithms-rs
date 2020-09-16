@@ -22,12 +22,16 @@
 //! # Learning Outcomes
 //!
 //! - The principle of the Smith-Waterman local alignment algorithm, its time and space complexity
+//! 
+//! # Examples
+//! 
+//! No examples until the directory structure is fixed
 #![allow(non_snake_case)]
 use super::LocalAlign;
 use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFunc, Score, Seq, MatchParams};
 use crate::utils::matrix::Matrix;
 
-/// Needleman-Wunsch Aligner.
+/// Smith-Waterman Aligner.
 ///
 /// # Fields
 ///
