@@ -16,3 +16,4 @@
 // along with rust-bio-edu.  If not, see <http://www.gnu.org/licenses/>.
 
 pub mod matrix;
+pub type TextSlice<'a> = &'a [u8];

@@ -24,13 +24,75 @@
 //! - Benchmarking in Rust
 //! - Strategies to improve the performace of a program
 //!
+//! # Improving the performace of matrix operations
+//!
+//! In our first implementation of the Needleman-Wunsch algorithm, we used a `Vec` of `Vec` of `Score`,
+//! i.e. `Vec<Vec<Score>>`, to represent a matrix of `Score`. It was straightforward to use, but how about
+//! its performance?
+//!
+//! ## Introducing `cargo bench`
+//!
+//! `cargo` is shipped along with a benchmark utility. To use it, you write a set of benchmark programs in
+//! the `benches/` directory, and `cargo bench` them, without any additional requirements.
+//!
+//! ### Write your first benchmark program
+//!
+//! In `benches/matrix.rs`, write:
+//!
+//! ```ignore
+//! #![feature(test)]
+//! extern crate test;
+//! use test::Bencher;
+//! #[bench]
+//! fn bench_vec_of_vec(b: &mut Bencher) {
+//!     let (m, n) = (1000, 10000);
+//!     let mut matrix = vec![vec![0; n]; m];
+//!     b.iter(|| {
+//!         for i in 0..m {
+//!             for j in 0..n {
+//!                 matrix[i][j] = i * j;
+//!             }
+//!         }
+//!     });
+//! }
+//! ```
+//!
+//! The first three lines are boilerplate code needed for each file containing benchmark functions.
+//!
+//! Benchmark functions are similar to test functions. While test functions are marked with the attribute
+//! `test` and are named `test_*`, benchmark function are marked with the attribute`bench`, and it is
+//! idiomatic to begin the name of function with `bench_`.
+//!
+//! ## How can a matrix be represented in another way?
+//!
+//! Representing a matrix as a rectangle is intuitive to humans, but for computers, this adds complexity.
+//!
+//! In the Needleman-Wunsch algorithm, we only need to interact with matrices by getting at setting values
+//! at given coordinates `(i, j)`, and in fact we can implement these operations in a 1D vector.
+//!
+//! Imagine the elements of a `3x7` matrix `M` is numbered from left to right and then from top to bottom row by row,
+//! effectively collapsing the matrix into a vector `V`:
+//!
+//! ```ignore
+//!   |   0  1  2  3  4  5  6
+//! –––––––––––––––––––––––––
+//! 0 | [ 0  1  2  3  4  5  6
+//! 1 |   7  8  9 10 11 12 13
+//! 2 |  14 15 16 17 18 19 20 ]
+//! ```
+//!
+//! Clealy, getting `M[i][j]` can be translated to getting `V[i * n + j]`, where `n` is the number of columns.
+//!
+//! ## Comparing the performace of the two approaches
+//!
+//! # Conclusion
 #![allow(non_snake_case)]
 use super::GlobalAlign;
-use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFn, Score, Seq};
+use super::{Alignment, AlignmentMode, AlignmentOperation, Score, Seq};
 use crate::utils::matrix::Matrix;
+type MatchFn = fn(u8, u8) -> Score;
 
 /// Needleman-Wunsch Aligner.
-///
 pub struct Aligner {
     pub match_fn: MatchFn,
     pub gap_penalty: Score,
@@ -45,11 +107,12 @@ impl GlobalAlign for Aligner {
         Alignment {
             x,
             y,
+            score: S.get(m, n),
             xstart: 0,
             ystart: 0,
             xend: m,
             yend: n,
-            operations: operations,
+            operations,
             mode: AlignmentMode::Global,
         }
     }
