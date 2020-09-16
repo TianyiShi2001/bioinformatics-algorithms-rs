@@ -57,7 +57,7 @@ I learn bioinformatic not only from textbooks but also from articles, and I foun
 
 Personally, I think **Rust is the best programming language for bioinformatics**, for several simple but justifiable reasons:
 
-- Python is slow. I do not say that Python is a bad language. Python is a great language for begginners in programming thanks to its simple syntax, and is also useful in situations where the program's API is fast-changing, especially in web services. On the contraty, in bioinformatics, execution speed is the priority, and the algorithms are updated relatively slowly, some of which haven't been improved for many years). The same argument applies to 
+- Python is slow. I do not say that Python is a bad language. Python is a great language for begginners in programming thanks to its simple syntax, and is also useful in situations where the program's API is fast-changing, especially in web services. On the contraty, in bioinformatics, execution speed is the priority, and the algorithms are updated relatively slowly, some of which haven't been improved for years). The same argument applies to Ruby, Perl, etc.
 - Rust is **really fast.** According to [the computer language benchmarks game](https://benchmarksgame-team.pages.debian.net/benchmarksgame/which-programs-are-fastest.html), Rust is already in the same tier as C and C++ (the other two emerging compiled languages, Julia and Go, is about 1.5 and 2.5 times slower).
 - Rust is **much easier to write than C/C++**. Well, frankly, I can't write C/C++. As a biochemistry specialist with only programming experience in Python, R and Javascript, I felt uncomfortable while I was struggling to learn C/C++ for the following reasons:
 
