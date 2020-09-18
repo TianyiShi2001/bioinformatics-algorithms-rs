@@ -15,61 +15,53 @@
 // You should have received a copy of the GNU General Public License
 // along with rust-bio-edu.  If not, see <http://www.gnu.org/licenses/>.
 
-//! A simple implementation of a matrix, used by naive implementations of pairwise alignment.
-//! 
-//! Typically, you initilize an empty $m \times n$ matrix with `Matrix::with_capacity(m, n)` and then push the values row by row with `.push(v)`. You
-//! can also initialize a matrix filled with a constant value by `Matrix::fill(m, n, v)`. Then, you can get and set the value at a given index $(i, j)$ by 
-//! `.get(i, j)` and `.set(i, j, v)`, respectively.
+//! A naïve implementation of a fixed-shape matrix.
+//!
+//! Typically, you initilize an empty $m \times n$ matrix with `Matrix::with_capacity(m, n)` and then push
+//! the values row by row with `.push(v)`. You can also initialize a matrix filled with a constant value by
+//! `Matrix::fill(m, n, v)`. Then, you can get and set the value at a given index $(i, j)$ by `.get(i, j)`
+//! and `.set(i, j, v)`, respectively. There are also unsafe (i.e. without bound checking) versions of the
+//! two methods, namely `.get_unsafe(i, j)` and `.set_unsafe(i, j, v)`, which do their job faster (about 2x
+//! speed).
 
-use std::default::Default;
 use std::fmt;
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Matrix<T: Clone + Copy> {
     pub nrow: usize,
     pub ncol: usize,
-    pub value: Vec<T>,
-}
-
-impl<T: Clone + Copy> Default for Matrix<T> {
-    fn default() -> Self {
-        Matrix {
-            ncol: 0,
-            nrow: 0,
-            value: Vec::new(),
-        }
-    }
+    pub values: Vec<T>,
 }
 
 impl<T: Clone + Copy> Matrix<T> {
-    pub fn new() -> Self {
-        Matrix::default()
-    }
     pub fn with_capacity(nrow: usize, ncol: usize) -> Self {
         Self {
             nrow,
             ncol,
-            value: Vec::<T>::with_capacity(nrow * ncol),
+            values: Vec::<T>::with_capacity(nrow * ncol),
         }
     }
     pub fn fill(nrow: usize, ncol: usize, v: T) -> Self {
         Self {
             nrow,
             ncol,
-            value: vec![v; nrow * ncol],
+            values: vec![v; nrow * ncol],
         }
     }
     pub fn get(&self, i: usize, j: usize) -> T {
-        self.value[i * self.ncol + j]
-    }
-    pub fn get_mut(&mut self, i: usize, j: usize) -> &mut T {
-        &mut self.value[i * self.ncol + j]
+        self.values[i * self.ncol + j]
     }
     pub fn set(&mut self, i: usize, j: usize, v: T) {
-        self.value[i * self.ncol + j] = v;
+        self.values[i * self.ncol + j] = v;
+    }
+    pub unsafe fn get_unsafe(&self, i: usize, j: usize) -> T {
+        *self.values.get_unchecked(i * self.ncol + j)
+    }
+    pub unsafe fn set_unsafe(&mut self, i: usize, j: usize, v: T) {
+        *self.values.get_unchecked_mut(i * self.ncol + j) = v;
     }
     pub fn push(&mut self, v: T) {
-        self.value.push(v)
+        self.values.push(v)
     }
 }
 
@@ -88,13 +80,6 @@ impl<T: Clone + Copy + fmt::Display> fmt::Display for Matrix<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    #[test]
-    fn test_matrix_new() {
-        let m = Matrix::<i32>::new();
-        assert_eq!(m.ncol, 0);
-        assert_eq!(m.nrow, 0);
-        assert_eq!(m.value, Vec::<i32>::new());
-    }
 
     #[test]
     fn test_matrix_fill() {
@@ -104,7 +89,7 @@ mod tests {
             Matrix {
                 nrow: 3,
                 ncol: 2,
-                value: vec![0i32; 6]
+                values: vec![0i32; 6]
             }
         )
     }
