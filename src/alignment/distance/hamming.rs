@@ -15,7 +15,31 @@
 // You should have received a copy of the GNU General Public License
 // along with rust-bio-edu.  If not, see <http://www.gnu.org/licenses/>.
 
-pub mod distance;
-pub mod pairwise;
-pub mod scores;
-pub use bio_types::alignment::*;
+use crate::utils::Seq;
+
+pub fn hamming_naive(x: Seq, y: Seq) -> u32 {
+    assert_eq!(
+        x.len(),
+        y.len(),
+        "The lengths of the two sequences must equal."
+    );
+    let mut dist = 0;
+    for (p, q) in x.iter().zip(y) {
+        if p != q {
+            dist += 1;
+        }
+    }
+    dist
+}
+
+pub fn hamming_unsafe(x: Seq, y: Seq) -> u32 {
+    let len = x.len();
+    assert_eq!(len, y.len(), "The lengths of the two sequences must equal.");
+    let mut dist = 0;
+    for i in 0..len {
+        if unsafe { x.get_unchecked(i) != y.get_unchecked(i) } {
+            dist += 1
+        }
+    }
+    dist
+}

@@ -8,4 +8,5 @@ edition = "2018"
 
 [dependencies]
 rayon = "1.4.0"
-bio-types ="0.7.0“
+bio-types ="0.7.0"
+nalgebra = "0.18"

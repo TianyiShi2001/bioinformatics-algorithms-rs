@@ -20,7 +20,7 @@
 //! Cluster Percentage: >= 62
 //! Entropy = 0.6979, Expected = -0.5209
 
-use crate::scores::lookup;
+use crate::alignment::scores::lookup;
 
 const MAT: [i32; 729] = [
     4, -2, 0, -2, -1, -2, 0, -2, -1, -1, -1, -1, -1, -2, 0, -1, -1, -1, 1, 0, 0, 0, -3, 0, -2, -1,

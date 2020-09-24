@@ -45,12 +45,12 @@
 //! use test::Bencher;
 //! #[bench]
 //! fn bench_vec_of_vec(b: &mut Bencher) {
-//!     let (m, n) = (1000, 10000);
-//!     let mut matrix = vec![vec![0; n]; m];
+//!     let (m, n) = (10000, 10000);
+//!     let mut matrix = vec![vec![0u8; n]; m];
 //!     b.iter(|| {
 //!         for i in 0..m {
 //!             for j in 0..n {
-//!                 matrix[i][j] = i * j;
+//!                 matrix[i][j] = 1u8;
 //!             }
 //!         }
 //!     });
