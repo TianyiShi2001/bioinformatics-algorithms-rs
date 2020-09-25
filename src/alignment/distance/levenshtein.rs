@@ -1,6 +1,27 @@
+use crate::utils::matrix::Matrix;
 use crate::utils::Seq;
 use std::cmp::min;
-use std::mem;
+
+pub fn levenshtein_naive(alpha: Seq<'_>, beta: Seq<'_>) -> u32 {
+    let (m, n) = (alpha.len(), beta.len());
+    let mut dp_matrix = Matrix::fill(m + 1, n + 1, 0u32);
+    for j in 1..=n {
+        dp_matrix.set(0, j, j as u32);
+    }
+    for i in 1..=m {
+        dp_matrix.set(i, 0, i as u32);
+    }
+    for i in 1..=m {
+        for j in 1..=n {
+            let diag =
+                dp_matrix.get(i - 1, j - 1) + if alpha[i - 1] == beta[j - 1] { 0 } else { 1 };
+            let up = dp_matrix.get(i - 1, j) + 1;
+            let left = dp_matrix.get(i, j - 1) + 1;
+            dp_matrix.set(i, j, min(diag, min(up, left)));
+        }
+    }
+    dp_matrix.get(m, n)
+}
 
 pub fn levenshtein_space_efficient(alpha: Seq<'_>, beta: Seq<'_>) -> u32 {
     let (m, n) = (alpha.len(), beta.len());
