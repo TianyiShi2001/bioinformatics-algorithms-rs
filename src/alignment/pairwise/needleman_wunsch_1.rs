@@ -118,6 +118,7 @@ impl<'a> Aligner {
             }
         }
     }
+    #[allow(clippy::ptr_arg)]
     pub fn traceback(&self, T: &Matrix<AlignmentOperation>) -> Vec<AlignmentOperation> {
         let (mut i, mut j) = (T.len() - 1, T[0].len() - 1);
         let mut operations = Vec::<AlignmentOperation>::new();

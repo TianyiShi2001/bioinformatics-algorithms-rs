@@ -54,9 +54,15 @@ impl<T: Clone + Copy> Matrix<T> {
     pub fn set(&mut self, i: usize, j: usize, v: T) {
         self.values[i * self.ncol + j] = v;
     }
+    /// # Safety
+    ///
+    /// Uses `get_unchecked` under the hood.
     pub unsafe fn get_unsafe(&self, i: usize, j: usize) -> T {
         *self.values.get_unchecked(i * self.ncol + j)
     }
+    /// # Safety
+    ///
+    /// Uses `get_unchecked_mut` under the hood.
     pub unsafe fn set_unsafe(&mut self, i: usize, j: usize, v: T) {
         *self.values.get_unchecked_mut(i * self.ncol + j) = v;
     }
@@ -71,7 +77,7 @@ impl<T: Clone + Copy + fmt::Display> fmt::Display for Matrix<T> {
             for j in 0..self.ncol {
                 write!(f, "{:>3} ", self.get(i, j))?;
             }
-            write!(f, "\n")?;
+            writeln!(f, "")?;
         }
         Ok(())
     }

@@ -23,7 +23,7 @@
 //! | :-------: | :-----------: | :-------------------------------------: |
 //! |     B     |      Asx      | Asparagine or Aspartic acid (Aspartate) |
 //! |     Z     |      Glx      | Glutamine or Glutamic acid (Glutamate)  |
-//! |     X     |      Xaa      |        Any amino acid	All codons        |
+//! |     X     |      Xaa      |        Any amino acid All codons        |
 //! |     *     |      END      |  Termination codon (translation stop)   |
 //!
 //! # References

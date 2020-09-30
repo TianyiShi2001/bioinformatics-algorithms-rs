@@ -94,30 +94,18 @@ impl<'a> fmt::Display for Alignment<'a> {
         let mut inb_pretty = String::new();
 
         if !self.operations.is_empty() {
-            let mut x_i: usize;
-            let mut y_i: usize;
+            let mut x_i = self.xstart;
+            let mut y_i = self.ystart;
 
-            // If the alignment mode is one of the standard ones, the prefix clipping is
-            // implicit so we need to process it here
-            match self.mode {
-                // AlignmentMode::Custom => {
-                //     x_i = 0;
-                //     y_i = 0;
-                // }
-                _ => {
-                    x_i = self.xstart;
-                    y_i = self.ystart;
-                    for k in x.iter().take(self.xstart) {
-                        x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
-                        inb_pretty.push(' ');
-                        y_pretty.push(' ')
-                    }
-                    for k in y.iter().take(self.ystart) {
-                        y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
-                        inb_pretty.push(' ');
-                        x_pretty.push(' ')
-                    }
-                }
+            for k in x.iter().take(self.xstart) {
+                x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
+                inb_pretty.push(' ');
+                y_pretty.push(' ')
+            }
+            for k in y.iter().take(self.ystart) {
+                y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
+                inb_pretty.push(' ');
+                x_pretty.push(' ')
             }
 
             // Process the alignment.
@@ -127,7 +115,7 @@ impl<'a> fmt::Display for Alignment<'a> {
                         x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[x[x_i]])));
                         x_i += 1;
 
-                        inb_pretty.push_str("|");
+                        inb_pretty.push('|');
 
                         y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[y[y_i]])));
                         y_i += 1;
@@ -161,22 +149,15 @@ impl<'a> fmt::Display for Alignment<'a> {
                 }
             }
 
-            // If the alignment mode is one of the standard ones, the suffix clipping is
-            // implicit so we need to process it here
-            match self.mode {
-                // AlignmentMode::Custom => {}
-                _ => {
-                    for k in x.iter().take(xlen).skip(x_i) {
-                        x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
-                        inb_pretty.push(' ');
-                        y_pretty.push(' ')
-                    }
-                    for k in y.iter().take(ylen).skip(y_i) {
-                        y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
-                        inb_pretty.push(' ');
-                        x_pretty.push(' ')
-                    }
-                }
+            for k in x.iter().take(xlen).skip(x_i) {
+                x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
+                inb_pretty.push(' ');
+                y_pretty.push(' ')
+            }
+            for k in y.iter().take(ylen).skip(y_i) {
+                y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
+                inb_pretty.push(' ');
+                x_pretty.push(' ')
             }
         }
 
@@ -193,13 +174,13 @@ impl<'a> fmt::Display for Alignment<'a> {
         while idx < ml {
             let rng = idx..min(idx + step, ml);
             s.push_str(&x_pretty[rng.clone()]);
-            s.push_str("\n");
+            s.push('\n');
 
             s.push_str(&inb_pretty[rng.clone()]);
-            s.push_str("\n");
+            s.push('\n');
 
             s.push_str(&y_pretty[rng]);
-            s.push_str("\n");
+            s.push('\n');
 
             s.push_str("\n\n");
             idx += step;
