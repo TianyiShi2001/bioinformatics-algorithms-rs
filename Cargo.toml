@@ -10,3 +10,8 @@ edition = "2018"
 rayon = "1.4.0"
 bio-types ="0.7.0"
 nalgebra = "0.18"
+
+[dev-dependencies.cargo-husky]
+version = "1"
+default-features = false # Disable features which are enabled by default
+features = ["precommit-hook", "run-cargo-test", "run-cargo-clippy"]

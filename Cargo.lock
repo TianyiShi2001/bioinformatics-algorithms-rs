@@ -46,6 +46,7 @@ name = "bio-edu"
 version = "0.0.1"
 dependencies = [
  "bio-types",
+ "cargo-husky",
  "nalgebra",
  "rayon",
 ]
@@ -69,6 +70,12 @@ name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
+
+[[package]]
+name = "cargo-husky"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b02b629252fe8ef6460461409564e2c21d0c8e77e0944f3d189ff06c4e932ad"
 
 [[package]]
 name = "cfg-if"

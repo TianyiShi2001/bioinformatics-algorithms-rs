@@ -46,7 +46,7 @@ I learn bioinformatic not only from textbooks but also from articles, and I foun
 
 # What to expect from this repository
 
-- Organised into this hierarchical order: `category/[subcategory]/problem/solution.rs`, where each `problem` usually have multiple `solution`s
+- Organised into this hierarchical order: `category/[subcategory]/problem/solution.rs`, where each `problem` usually have multiple `solution`s, ranging from "naïve" ones to advanced, practical ones.
 - Implementation details will be documented thoroughly in rustdoc (may be reorganised into a **mdbook** in the future). The documentation should guide the readers to implement the algorithms themselves.
 - Most solutions have corresponding original literature, and readers are encouraged to read them.
 - Comments in the source code will be verbose.
@@ -88,7 +88,7 @@ In addition, English is not my first language, so I would be grateful if you can
 | Implemented |       Author        | Space complexity | Global | Local | Semiglobal | Affine Gap | Log Gap |
 | :---------: | :-----------------: | :--------------: | :----: | :---: | :--------: | :--------: | :-----: |
 |      ✅      |  Needleman-Wunsch   |   **_O(nm)_**    |   ✅    |       |            |            |         |
-|             |   Smith-Waterman    |   **_O(nm)_**    |        |   ✅   |            |            |         |
+|      ✅      |   Smith-Waterman    |   **_O(nm)_**    |        |   ✅   |            |            |         |
 |             |        Gotoh        |   **_O(nm)_**    |   ✅    |       |            |     ✅      |         |
 |             |      Hirshberg      |    **_O(n)_**    |   ✅    |       |            |            |         |
 |             | Myers-Miller (1988) |    **_O(n)_**    |   ✅    |       |            |     ✅      |         |
