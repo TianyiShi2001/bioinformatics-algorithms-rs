@@ -77,7 +77,7 @@ impl<T: Clone + Copy + fmt::Display> fmt::Display for Matrix<T> {
             for j in 0..self.ncol {
                 write!(f, "{:>3} ", self.get(i, j))?;
             }
-            writeln!(f, "")?;
+            writeln!(f)?;
         }
         Ok(())
     }
