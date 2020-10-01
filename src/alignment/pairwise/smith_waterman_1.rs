@@ -27,6 +27,7 @@
 //!
 //! No examples until the directory structure is fixed
 #![allow(non_snake_case)]
+use super::traceback_naive::TracebackDirection;
 use super::LocalAlign;
 use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFunc, MatchParams, Score, Seq};
 use crate::utils::matrix::Matrix;
@@ -51,7 +52,7 @@ impl<F: MatchFunc> LocalAlign for Aligner<F> {
         let (mut S, mut T) = self.init_matrices(m, n);
         self.fill_matrices(&mut S, &mut T, x, y);
         let (score, (xend, yend)) = Self::find_max_score_and_coords(&S);
-        let (operations, (xstart, ystart)) = self.traceback(&T, xend, yend);
+        let (operations, (xstart, ystart)) = self.traceback(&T, x, y, xend, yend);
         Alignment {
             x,
             y,
@@ -73,9 +74,9 @@ impl<F: MatchFunc> Aligner<F> {
             gap_penalty,
         }
     }
-    pub fn init_matrices(&self, m: usize, n: usize) -> (Matrix<Score>, Matrix<AlignmentOperation>) {
+    pub fn init_matrices(&self, m: usize, n: usize) -> (Matrix<Score>, Matrix<TracebackDirection>) {
         let S = Matrix::fill(m + 1, n + 1, 0 as Score);
-        let T = Matrix::fill(m + 1, n + 1, AlignmentOperation::Origin);
+        let T = Matrix::fill(m + 1, n + 1, TracebackDirection::Origin);
         // we don't need to fill the first column & row
         //
         // for j in 1..=n {
@@ -91,7 +92,7 @@ impl<F: MatchFunc> Aligner<F> {
     pub fn fill_matrices(
         &self,
         S: &mut Matrix<Score>,
-        T: &mut Matrix<AlignmentOperation>,
+        T: &mut Matrix<TracebackDirection>,
         x: Seq,
         y: Seq,
     ) {
@@ -102,54 +103,55 @@ impl<F: MatchFunc> Aligner<F> {
                 let up = S.get(i - 1, j) + self.gap_penalty;
                 let left = S.get(i, j - 1) + self.gap_penalty;
                 let mut max_score = diag;
-                let mut operation = if xi == yj {
-                    AlignmentOperation::Match
-                } else {
-                    AlignmentOperation::Mismatch
-                };
+                let mut direction = TracebackDirection::Diag;
                 if up > max_score {
                     max_score = up;
-                    operation = AlignmentOperation::Delete;
+                    direction = TracebackDirection::Up;
                 }
                 if left > max_score {
                     max_score = left;
-                    operation = AlignmentOperation::Insert;
+                    direction = TracebackDirection::Left;
                 }
                 // if the max score is less than 0, set this point to origin
                 if max_score < 0 {
                     max_score = 0;
-                    operation = AlignmentOperation::Origin;
+                    direction = TracebackDirection::Origin;
                 }
                 S.set(i, j, max_score);
-                T.set(i, j, operation);
+                T.set(i, j, direction);
             }
         }
     }
     pub fn traceback(
         &self,
-        T: &Matrix<AlignmentOperation>,
+        T: &Matrix<TracebackDirection>,
+        x: Seq,
+        y: Seq,
         mut i: usize,
         mut j: usize,
     ) -> (Vec<AlignmentOperation>, (usize, usize)) {
         // trackback from the max score
         let mut operations = Vec::<AlignmentOperation>::new();
         loop {
-            let o = T.get(i, j);
-            match o {
-                AlignmentOperation::Match | AlignmentOperation::Mismatch => {
-                    operations.push(o);
+            match T.get(i, j) {
+                TracebackDirection::Diag => {
+                    operations.push(if x[i - 1] == y[j - 1] {
+                        AlignmentOperation::Match
+                    } else {
+                        AlignmentOperation::Mismatch
+                    });
                     i -= 1; // moving diagonal
                     j -= 1;
                 }
-                AlignmentOperation::Delete => {
-                    operations.push(o);
+                TracebackDirection::Up => {
+                    operations.push(AlignmentOperation::Delete);
                     i -= 1; // moving up
                 }
-                AlignmentOperation::Insert => {
-                    operations.push(o);
+                TracebackDirection::Left => {
+                    operations.push(AlignmentOperation::Insert);
                     j -= 1; // moving left
                 }
-                AlignmentOperation::Origin => break, // reaching origin (0,0)
+                TracebackDirection::Origin => break, // reaching origin (0,0)
             }
         }
         (operations, (i, j))

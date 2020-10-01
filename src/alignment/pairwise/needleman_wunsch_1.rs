@@ -27,6 +27,7 @@
 //! Original Literature: [Needleman SB, Wunsch CD. A general method applicable to the search for similarities in the amino acid sequence of two proteins. J Mol Biol. 1970;48(3):443-453.](https://doi.org/10.1016/0022-2836(70)90057-4)
 //!
 #![allow(non_snake_case)]
+use super::traceback_naive::TracebackDirection;
 use super::GlobalAlign;
 use super::{Alignment, AlignmentMode, AlignmentOperation, Score, Seq};
 type Matrix<T> = Vec<Vec<T>>;
@@ -51,7 +52,7 @@ impl GlobalAlign for Aligner {
         let (m, n) = (x.len(), y.len());
         let (mut S, mut T) = self.init_matrices(m, n);
         self.fill_matrices(&mut S, &mut T, x, y);
-        let operations = self.traceback(&T);
+        let operations = self.traceback(&T, x, y);
         Alignment {
             x,
             y,
@@ -73,23 +74,23 @@ impl<'a> Aligner {
             gap_penalty,
         }
     }
-    pub fn init_matrices(&self, m: usize, n: usize) -> (Matrix<Score>, Matrix<AlignmentOperation>) {
+    pub fn init_matrices(&self, m: usize, n: usize) -> (Matrix<Score>, Matrix<TracebackDirection>) {
         let mut S = vec![vec![0 as Score; n + 1]; m + 1];
-        let mut T = vec![vec![AlignmentOperation::Origin; n + 1]; m + 1];
+        let mut T = vec![vec![TracebackDirection::Origin; n + 1]; m + 1];
         for j in 1..=n {
             S[0][j] = self.gap_penalty * j as Score;
-            T[0][j] = AlignmentOperation::Insert;
+            T[0][j] = TracebackDirection::Left;
         }
         for i in 1..=m {
             S[i][0] = self.gap_penalty * i as Score;
-            T[i][0] = AlignmentOperation::Delete;
+            T[i][0] = TracebackDirection::Up;
         }
         (S, T)
     }
     pub fn fill_matrices(
         &self,
         S: &mut Matrix<Score>,
-        T: &mut Matrix<AlignmentOperation>,
+        T: &mut Matrix<TracebackDirection>,
         x: Seq,
         y: Seq,
     ) {
@@ -100,45 +101,49 @@ impl<'a> Aligner {
                 let up = S[i - 1][j] + self.gap_penalty;
                 let left = S[i][j - 1] + self.gap_penalty;
                 let mut max_score = diag;
-                let mut operation = if xi == yj {
-                    AlignmentOperation::Match
-                } else {
-                    AlignmentOperation::Mismatch
-                };
+                let mut direction = TracebackDirection::Diag;
                 if up > max_score {
                     max_score = up;
-                    operation = AlignmentOperation::Delete;
+                    direction = TracebackDirection::Up;
                 }
                 if left > max_score {
                     max_score = left;
-                    operation = AlignmentOperation::Insert;
+                    direction = TracebackDirection::Left;
                 }
                 S[i][j] = max_score;
-                T[i][j] = operation;
+                T[i][j] = direction;
             }
         }
     }
     #[allow(clippy::ptr_arg)]
-    pub fn traceback(&self, T: &Matrix<AlignmentOperation>) -> Vec<AlignmentOperation> {
+    pub fn traceback(
+        &self,
+        T: &Matrix<TracebackDirection>,
+        x: Seq,
+        y: Seq,
+    ) -> Vec<AlignmentOperation> {
         let (mut i, mut j) = (T.len() - 1, T[0].len() - 1);
         let mut operations = Vec::<AlignmentOperation>::new();
         loop {
-            let o = T[i][j];
-            match o {
-                AlignmentOperation::Match | AlignmentOperation::Mismatch => {
-                    operations.push(o);
+            match T[i][j] {
+                TracebackDirection::Diag => {
+                    operations.push(if x[i - 1] == y[j - 1] {
+                        AlignmentOperation::Match
+                    } else {
+                        AlignmentOperation::Mismatch
+                    });
                     i -= 1; // moving diagonal
                     j -= 1;
                 }
-                AlignmentOperation::Delete => {
-                    operations.push(o);
+                TracebackDirection::Up => {
+                    operations.push(AlignmentOperation::Delete);
                     i -= 1; // moving up
                 }
-                AlignmentOperation::Insert => {
-                    operations.push(o);
+                TracebackDirection::Left => {
+                    operations.push(AlignmentOperation::Insert);
                     j -= 1; // moving left
                 }
-                AlignmentOperation::Origin => break, // reaching origin (0,0)
+                TracebackDirection::Origin => break, // reaching origin (0,0)
             }
         }
         operations

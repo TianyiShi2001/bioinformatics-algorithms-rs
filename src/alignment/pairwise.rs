@@ -20,6 +20,7 @@
 pub mod myers_miller;
 pub mod needleman_wunsch_1;
 pub mod needleman_wunsch_2;
+pub mod needleman_wunsch_3;
 pub mod smith_waterman_1;
 
 use std::fmt;
@@ -36,18 +37,6 @@ pub enum AlignmentOperation {
     Delete,
     Mismatch,
     Match,
-    Origin,
-}
-
-impl fmt::Display for AlignmentOperation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            AlignmentOperation::Delete => write!(f, "↑"),
-            AlignmentOperation::Insert => write!(f, "←"),
-            AlignmentOperation::Match | AlignmentOperation::Mismatch => write!(f, "↖"),
-            AlignmentOperation::Origin => write!(f, "·"),
-        }
-    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -178,7 +167,6 @@ impl PartialEq for Alignment<'_> {
                 AlignmentOperation::Delete => d += 1,
                 AlignmentOperation::Mismatch => s += 1,
                 AlignmentOperation::Match => m += 1,
-                _ => unreachable!(),
             }
         }
         for o in o2 {
@@ -187,7 +175,6 @@ impl PartialEq for Alignment<'_> {
                 AlignmentOperation::Delete => d -= 1,
                 AlignmentOperation::Mismatch => s -= 1,
                 AlignmentOperation::Match => m -= 1,
-                _ => unreachable!(),
             }
         }
         i == 0 && d == 0 && s == 0 && m == 0
@@ -272,7 +259,6 @@ impl<'a> fmt::Display for Alignment<'a> {
 
                         y_pretty.push('-');
                     }
-                    _ => {}
                 }
             }
 
@@ -438,3 +424,337 @@ impl<F: MatchFunc> Scoring<F> {
         }
     }
 }
+
+pub mod traceback_naive {
+    use std::fmt;
+    #[derive(Copy, Clone)]
+    pub enum TracebackDirection {
+        Up,
+        Left,
+        Diag,
+        Origin,
+    }
+
+    impl fmt::Display for TracebackDirection {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                TracebackDirection::Up => write!(f, "↑"),
+                TracebackDirection::Left => write!(f, "←"),
+                TracebackDirection::Diag => write!(f, "↖"),
+                TracebackDirection::Origin => write!(f, "·"),
+            }
+        }
+    }
+}
+
+pub mod traceback {
+    #[derive(Copy, Clone)]
+    pub struct TracebackCell(u8);
+
+    pub const TB_ORIGIN: u8 = 0b00;
+    pub const TB_LEFT: u8 = 0b01;
+    pub const TB_UP: u8 = 0b10;
+    pub const TB_DIAG: u8 = 0b11;
+
+    // Traceback bit positions (LSB)
+    const I_POS: u8 = 0; // Meaning bits 0,1 corresponds to I and so on
+    const D_POS: u8 = 2;
+    const S_POS: u8 = 4;
+
+    impl std::default::Default for TracebackCell {
+        #[inline(always)]
+        fn default() -> Self {
+            Self(0u8)
+        }
+    }
+
+    impl TracebackCell {
+        /// Initialize a blank traceback cell
+        pub fn new() -> Self {
+            Self::default()
+        }
+
+        /// Sets 2 bits [pos, pos+2) with the 2 LSBs of value
+        #[inline(always)]
+        fn set_bits(&mut self, pos: u8, value: u8) {
+            let bits: u8 = (0b11) << pos;
+            self.0 = (self.0 & !bits) // First clear the bits
+            | (value << pos) // And set the bits
+        }
+
+        #[inline(always)]
+        pub fn set_i_bits(&mut self, value: u8) {
+            // Traceback corresponding to matrix I
+            self.set_bits(I_POS, value);
+        }
+
+        #[inline(always)]
+        pub fn set_d_bits(&mut self, value: u8) {
+            // Traceback corresponding to matrix D
+            self.set_bits(D_POS, value);
+        }
+
+        #[inline(always)]
+        pub fn set_s_bits(&mut self, value: u8) {
+            // Traceback corresponding to matrix S
+            self.set_bits(S_POS, value);
+        }
+
+        // Gets 4 bits [pos, pos+4) of v
+        #[inline(always)]
+        fn get_bits(self, pos: u8) -> u8 {
+            (self.0 >> pos) & (0b11)
+        }
+
+        #[inline(always)]
+        pub fn get_i_bits(self) -> u8 {
+            self.get_bits(I_POS)
+        }
+
+        #[inline(always)]
+        pub fn get_d_bits(self) -> u8 {
+            self.get_bits(D_POS)
+        }
+
+        #[inline(always)]
+        pub fn get_s_bits(self) -> u8 {
+            self.get_bits(S_POS)
+        }
+
+        /// Set all matrices to the same value.
+        pub fn set_all(&mut self, value: u8) {
+            self.set_i_bits(value);
+            self.set_d_bits(value);
+            self.set_s_bits(value);
+        }
+    }
+
+    impl std::fmt::Debug for TracebackCell {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            f.debug_struct(&format!("{:06b}", self.0)).finish()
+        }
+    }
+}
+
+// pub mod tests {
+//     // TODO: macros that help running multiple aligners?
+//     use super::myers_miller::Aligner;
+//     use super::*;
+//     use crate::alignment::pairwise::{Alignment, AlignmentOperation::*};
+//     use std::iter::repeat;
+
+//     macro_rules! test_global_alignment {
+//         ($aligner:item) => {
+//             #[test]
+//             fn test_global_affine_ins() {
+//                 let x = b"ACGAGAACA";
+//                 let y = b"ACGACA";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -3i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.global(x, y);
+
+//                 println!("{}", alignment);
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::global(x, y).score(-2).operations(vec![
+//                         Match, Match, Match, Delete, Delete, Delete, Match, Match, Match
+//                     ])
+//                 );
+//             }
+
+//             #[test]
+//             fn test_global_affine_ins2() {
+//                 let x = b"AGATAGATAGATAGGGAGTTGTGTAGATGATCCACAGT";
+//                 let y = b"AGATAGATAGATGTAGATGATCCACAGT";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.global(x, y);
+
+//                 println!("{:?}", alignment);
+//                 println!("{}", alignment);
+
+//                 let mut correct = Vec::new();
+//                 correct.extend(repeat(Match).take(11));
+//                 correct.extend(repeat(Delete).take(10));
+//                 correct.extend(repeat(Match).take(17));
+
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::global(x, y).score(13).operations(correct)
+//                 );
+//             }
+
+//             #[test]
+//             fn test_global() {
+//                 let x = b"ACCGTGGAT";
+//                 let y = b"AAAAACCGTTGAT";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.global(x, y);
+
+//                 println!("{}", alignment);
+
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::global(x, y).score(-2).operations(vec![
+//                         Insert, Insert, Insert, Insert, Match, Match, Match, Match, Match,
+//                         Mismatch, Match, Match, Match,
+//                     ])
+//                 );
+//             }
+
+//             // #[test]
+//             // fn test_blosum62() {
+//             //     let x = b"AAAA";
+//             //     let y = b"AAAA";
+//             //     let score = &blosum62;
+//             //     let aligner = $aligner::new(-5, -1, score);
+//             //     let alignment = aligner.global(x, y);
+//             //     assert_eq!(alignment.ystart, 0);
+//             //     assert_eq!(alignment.xstart, 0);
+//             //     assert_eq!(alignment.score, 16);
+//             //     assert_eq!(alignment, [Match, Match, Match, Match]);
+//             // }
+
+//             #[test]
+//             fn test_issue11() {
+//                 let y = b"TACC"; //GTGGAC";
+//                 let x = b"AAAAACC"; //GTTGACGCAA";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.global(x, y);
+//                 assert_eq!(alignment.ystart, 0);
+//                 assert_eq!(alignment.xstart, 0);
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::global(x, y)
+//                         .score(-6)
+//                         .operations(vec![Delete, Delete, Delete, Mismatch, Match, Match, Match])
+//                 );
+//             }
+
+//             #[test]
+//             fn test_left_aligned_del() {
+//                 let x = b"GTGCATCATGTG";
+//                 let y = b"GTGCATCATCATGTG";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.global(x, y);
+//                 println!("{}", alignment);
+
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::global(x, y).score(4).operations(vec![
+//                         Match, Match, Match, Insert, Insert, Insert, Match, Match, Match, Match,
+//                         Match, Match, Match, Match, Match,
+//                     ])
+//                 )
+//             }
+
+//             // Test that trailing deletions are correctly handled
+//             // in global mode
+//             #[test]
+//             fn test_global_right_del() {
+//                 let x = b"AACCACGTACGTGGGGGGA";
+//                 let y = b"CCACGTACGT";
+
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.global(x, y);
+
+//                 println!("{}", alignment);
+
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::global(x, y).score(-9).operations(vec![
+//                         Delete, Delete, Match, Match, Match, Match, Match, Match, Match, Match,
+//                         Match, Match, Delete, Delete, Delete, Delete, Delete, Delete, Delete,
+//                     ])
+//                 );
+//             }
+
+//             #[test]
+//             fn test_left_aligned_ins() {
+//                 let x = b"GTGCATCATCATGTG";
+//                 let y = b"GTGCATCATGTG";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.global(x, y);
+//                 println!("{}", alignment);
+
+//                 assert_eq!(alignment.ystart, 0);
+//                 assert_eq!(alignment.xstart, 0);
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::global(x, y).score(4).operations(vec![
+//                         Match, Match, Match, Delete, Delete, Delete, Match, Match, Match, Match,
+//                         Match, Match, Match, Match, Match,
+//                     ])
+//                 );
+//             }
+//         };
+//     }
+//     test_global_alignment!(myers_miller::Aligner);
+
+//     macro_rules! test_semiglobal_alignment {
+//         ($aligner:item) => {
+//             #[test]
+//             fn test_semiglobal() {
+//                 let x = b"AAAAACCGTTGAT";
+//                 let y = b"ACCGTGGAT";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.semiglobal(x, y);
+//                 println!("{}", alignment);
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::semiglobal(x, y)
+//                         .score(7)
+//                         .xstart(4)
+//                         .operations(vec![
+//                             Match, Match, Match, Match, Match, Mismatch, Match, Match, Match,
+//                         ])
+//                 );
+//             }
+//         };
+//     }
+
+//     test_semiglobal_alignment!(myers_miller::Aligner);
+
+//     macro_rules! test_local_alignment {
+//         ($aligner:item) => {
+//             #[test]
+//             fn test_local_affine_ins2() {
+//                 let x = b"ACGTATCATAGATAGATAGGGTTGTGTAGATGATCCACAG";
+//                 let y = b"CGTATCATAGATAGATGTAGATGATCCACAGT";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.local(x, y);
+//                 assert_eq!(alignment.xstart, 1);
+//                 assert_eq!(alignment.ystart, 0);
+//             }
+
+//             #[test]
+//             fn test_local() {
+//                 let x = b"ACCGTGGAT";
+//                 let y = b"AAAAACCGTTGAT";
+//                 let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+//                 let aligner = $aligner::new(-5, -1, score);
+//                 let alignment = aligner.local(x, y);
+//                 println!("{}", alignment);
+//                 assert_eq!(
+//                     alignment,
+//                     Alignment::local(x, y)
+//                         .xstart(0)
+//                         .ystart(4)
+//                         .score(7)
+//                         .operations(vec![
+//                             Match, Match, Match, Match, Match, Mismatch, Match, Match, Match,
+//                         ])
+//                 );
+//             }
+//         };
+//     }
+
+//     test_local_alignment!(myers_miller::Aligner);
+// }

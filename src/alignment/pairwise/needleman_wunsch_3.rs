@@ -25,6 +25,8 @@
 //!
 //! # Improving Space Efficiency
 #![allow(non_snake_case)]
+#![allow(clippy::many_single_char_names)]
+use super::traceback_naive::TracebackDirection;
 use super::GlobalAlign;
 use super::{Alignment, AlignmentMode, AlignmentOperation, Score, Seq};
 use crate::utils::matrix::Matrix;
@@ -39,12 +41,12 @@ pub struct Aligner {
 impl GlobalAlign for Aligner {
     fn global<'a>(&self, x: Seq<'a>, y: Seq<'a>) -> Alignment<'a> {
         let (m, n) = (x.len(), y.len());
-        let (S, T) = self.fill_matrices(x, y)
-        let operations = self.traceback(&T);
+        let (S, T) = self.fill_matrices(x, y);
+        let operations = self.traceback(&T, x, y);
         Alignment {
             x,
             y,
-            score: S[n];
+            score: S[n],
             xstart: 0,
             ystart: 0,
             xend: m,
@@ -63,21 +65,18 @@ impl Aligner {
         }
     }
 
-    pub fn fill_matrices(
-        &self,
-        x: Seq,
-        y: Seq
-    ) -> (Vec<Score>, Matrix<AlignmentOperation>) {
+    #[allow(clippy::needless_range_loop)]
+    pub fn fill_matrices(&self, x: Seq, y: Seq) -> (Vec<Score>, Matrix<TracebackDirection>) {
         let (m, n) = (x.len(), y.len());
         // init matrices
         let mut S = vec![0; n + 1];
-        let mut T = Matrix::fill(m + 1, n + 1, AlignmentOperation::Origin);
+        let mut T = Matrix::fill(m + 1, n + 1, TracebackDirection::Origin);
         let mut s: Score; // S[i - 1][j - 1]
         let mut c: Score; // S[i][j - 1]
-        // fill the first row (row 0)
+                          // fill the first row (row 0)
         for j in 1..=n {
             S[j] = self.gap_penalty * j as Score;
-            T.set(0, j, AlignmentOperation::Insert);
+            T.set(0, j, TracebackDirection::Left);
         }
         // for each row i from row 1
         for i in 1..=m {
@@ -87,11 +86,11 @@ impl Aligner {
             c = self.gap_penalty + i as Score;
             // update S[i][0] and T[i][0] (the first element of each row)
             S[0] = c; // note that S[0] really is the 0-th element of the i-th row, i.e. S[i][0]; before updating, it was S[i - 1][0]
-            T.set(i, 0, AlignmentOperation::Delete);
-            let yj = y[j - 1]; 
+            T.set(i, 0, TracebackDirection::Up);
+            let xi = x[i - 1];
+            // xi only needs to be calculated once for each row; so instead of writing `let (xi, yj) = (x[i - 1], y[j - 1])`, separating them is better
             for j in 1..=n {
-                // yj only needs to be calculated once for each row; so instead of writing `let (xi, yj) = (x[i - 1], y[j - 1])`, separating them is better
-                let xi = x[i - 1];
+                let yj = y[j - 1];
 
                 let diag = s + (self.match_fn)(xi, yj);
                 // previously: `let diag = S.get(i - 1, j - 1) + (self.match_fn)(xi, yj);`
@@ -103,47 +102,51 @@ impl Aligner {
                 // previously: let left = S.get(i, j - 1) + self.gap_penalty;
 
                 let mut max_score = diag;
-                let mut operation = if xi == yj {
-                    AlignmentOperation::Match
-                } else {
-                    AlignmentOperation::Mismatch
-                };
+                let mut direction = TracebackDirection::Diag;
                 if up > max_score {
                     max_score = up;
-                    operation = AlignmentOperation::Delete;
+                    direction = TracebackDirection::Up;
                 }
                 if left > max_score {
                     max_score = left;
-                    operation = AlignmentOperation::Insert;
+                    direction = TracebackDirection::Left;
                 }
                 s = S[j]; // the value of S[j] before updating will become S[i - 1][j - 1] in the next round of calculation
-                S[j] = max_score
+                S[j] = max_score;
                 c = max_score; // the value of S[j] after updating will become S[i][j - 1] in the next round of calculation
-                T.set(i, j, operation);
+                T.set(i, j, direction);
             }
         }
         (S, T)
     }
-    pub fn traceback(&self, T: &Matrix<AlignmentOperation>) -> Vec<AlignmentOperation> {
+    pub fn traceback(
+        &self,
+        T: &Matrix<TracebackDirection>,
+        x: Seq,
+        y: Seq,
+    ) -> Vec<AlignmentOperation> {
         let (mut i, mut j) = (T.nrow, T.ncol);
         let mut operations = Vec::<AlignmentOperation>::new();
         loop {
-            let o = T.get(i, j);
-            match o {
-                AlignmentOperation::Match | AlignmentOperation::Mismatch => {
-                    operations.push(o);
+            match T.get(i, j) {
+                TracebackDirection::Diag => {
+                    operations.push(if x[i - 1] == y[j - 1] {
+                        AlignmentOperation::Match
+                    } else {
+                        AlignmentOperation::Mismatch
+                    });
                     i -= 1; // moving diagonal
                     j -= 1;
                 }
-                AlignmentOperation::Delete => {
-                    operations.push(o);
+                TracebackDirection::Up => {
+                    operations.push(AlignmentOperation::Delete);
                     i -= 1; // moving up
                 }
-                AlignmentOperation::Insert => {
-                    operations.push(o);
+                TracebackDirection::Left => {
+                    operations.push(AlignmentOperation::Insert);
                     j -= 1; // moving left
                 }
-                AlignmentOperation::Origin => break, // reaching origin (0,0)
+                TracebackDirection::Origin => break, // reaching origin (0,0)
             }
         }
         operations
