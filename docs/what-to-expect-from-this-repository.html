@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Chapter 2 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</title>
+  <meta name="description" content="Chapter 2 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta name="generator" content="bookdown 0.20 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Chapter 2 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Chapter 2 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Chapter 2 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  
+  <meta name="twitter:description" content="Chapter 2 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  
+
+<meta name="author" content="Tianyi Shi" />
+
+
+<meta name="date" content="2020-10-01" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="intro.html"/>
+<link rel="next" href="references.html"/>
+<script src="libs/header-attrs-2.4/header-attrs.js"></script>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Bioinformatics Algorithms</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="intro.html"><a href="intro.html#rationale"><i class="fa fa-check"></i><b>1.1</b> Rationale</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="what-to-expect-from-this-repository.html"><a href="what-to-expect-from-this-repository.html"><i class="fa fa-check"></i><b>2</b> What to expect from this repository</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="what-to-expect-from-this-repository.html"><a href="what-to-expect-from-this-repository.html#why-rust"><i class="fa fa-check"></i><b>2.1</b> Why Rust?</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<!--<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>-->
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="what-to-expect-from-this-repository" class="section level1" number="2">
+<h1><span class="header-section-number">Chapter 2</span> What to expect from this repository</h1>
+<ul>
+<li>Organised into this hierarchical order: <code>category/[subcategory]/problem/solution.rs</code>, where each <code>problem</code> usually have multiple <code>solution</code>s, ranging from “naïve” ones to advanced, practical ones.</li>
+<li>Implementation details will be documented thoroughly in rustdoc (may be reorganised into a <strong>mdbook</strong> in the future). The documentation should guide the readers to implement the algorithms themselves.</li>
+<li>Most solutions have corresponding original literature, and readers are encouraged to read them.</li>
+<li>Comments in the source code will be verbose.</li>
+<li>Clarity is more important than efficiency (although an optimised solution will be provided for each problem)</li>
+<li>All functions, structs, etc. are made public so that you can play around with them easily, but it should be emphasized again that you should not depend on any part of this repository for your development. Use <strong>rust-bio</strong> instead.</li>
+</ul>
+<div id="why-rust" class="section level2" number="2.1">
+<h2><span class="header-section-number">2.1</span> Why Rust?</h2>
+<p>Personally, I think <strong>Rust is the best programming language for bioinformatics</strong>, for several simple but justifiable reasons:</p>
+<ul>
+<li><p>Python is slow. I do not say that Python is a bad language. Python is a great language for begginners in programming thanks to its simple syntax, and is also useful in situations where the program’s API is fast-changing, especially in web services. On the contraty, in bioinformatics, execution speed is the priority, and the algorithms are updated relatively slowly, some of which haven’t been improved for years). The same argument applies to Ruby, Perl, etc.</p></li>
+<li><p>Rust is <strong>really fast.</strong> According to <a href="https://benchmarksgame-team.pages.debian.net/benchmarksgame/which-programs-are-fastest.html">the computer language benchmarks game</a>, Rust is already in the same tier as C and C++ (the other two emerging compiled languages, Julia and Go, is about 1.5 and 2.5 times slower).</p></li>
+<li><p>Rust is <strong>much easier to write than C/C++</strong>. Well, frankly, I can’t write C/C++. As a biochemistry specialist with only programming experience in Python, R and Javascript, I felt uncomfortable while I was struggling to learn C/C++ for the following reasons:</p>
+<ul>
+<li>There isn’t a central package registry/index equivalent to <strong>PyPI</strong>, <strong>CRAN</strong> or <strong>npm</strong>.</li>
+<li><a href="https://stackoverflow.com/questions/34967756/where-is-the-official-c-documentation#:~:text=C%2B%2B%20is%20not%20a%20product%20and%20there%20is,etc.%29.%20–%20sorush-r%20Jan%2023%20%2716%20at%2019%3A28">There isn’t even an “official documentation”,</a> not to mention an official tutorial. Popular books, such as <em>C++ Primer</em> by Stanley B. Lippman et al and <em>The C++ Standard Library</em> by Nicolai M. Josuttis, are not free. In contrast, many easy-to-read and up-to-date official or community resources exist for Python, JS and R, such as <a href="https://javascript.info">javascript.info</a> and <a href="https://r4ds.had.co.nz">r4ds</a>. In fact, an important reason I like R is its ease of sharing and obtaining knowledge thanks to RMarkdown and <a href="https://bookdown.org">Bookdown</a>.</li>
+</ul>
+<p>I was wondering, <strong>“do low-level, fast languages have to be that inconvinient? Even if a central package registry isn’t suitable for reasons currently unknown to me, it is technically difficult even to provide an official tutorial?”</strong> It turns out that the answer is “no”! Rust combines the best parts of C/C++ and the best parts of high-level programming languages. Honestly, I would say Rust’s packaging and documentation system is even better than Python. In addition to its clean and easy syntax, Rust has official <strong>tutorials</strong> (not “documentation”) <a href="https://doc.rust-lang.org/book/">The Book</a> and <a href="https://doc.rust-lang.org/nomicon/">Rustonomicon</a>. With all these nice features, Rust isn’t much more difficult to write than Python, at least for me. Rust deserves to be the most loved language according to <a href="https://insights.stackoverflow.com/survey/2020#technology-most-loved-dreaded-and-wanted-languages-loved">Stack Overflow’s survey</a> for 5 years running.</p></li>
+<li><p>To summarise, bioinformatics algorithms need to be fast, and biologists (or anyone not specialised in computer science itself) want simple stuff. The language that best fits the two criteria is definitely Rust.</p></li>
+</ul>
+<p>As a reference, here is the star history of <strong>Rust-Bio</strong> and a few other bioinformatics package suites:</p>
+<p><img src="img/star-history-2020-10.png" width="100%" /></p>
+
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="intro.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="references.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["book.pdf", "book.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

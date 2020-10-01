@@ -208,54 +208,52 @@ impl<'a> fmt::Display for Alignment<'a> {
         let mut inb_pretty = String::new();
 
         if !self.operations.is_empty() {
+            unsafe {
+                x_pretty.push_str(std::str::from_utf8_unchecked(&x[..self.xstart]));
+            }
+            y_pretty.push_str(&" ".repeat(self.xstart));
+            unsafe {
+                y_pretty.push_str(std::str::from_utf8_unchecked(&y[..self.ystart]));
+            }
+            x_pretty.push_str(&" ".repeat(self.ystart));
+            inb_pretty.push_str(&" ".repeat(self.xstart + self.ystart));
             let mut x_i = self.xstart;
             let mut y_i = self.ystart;
-
-            for k in x.iter().take(self.xstart) {
-                x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
-                inb_pretty.push(' ');
-                y_pretty.push(' ')
-            }
-            for k in y.iter().take(self.ystart) {
-                y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[*k])));
-                inb_pretty.push(' ');
-                x_pretty.push(' ')
-            }
 
             // Process the alignment.
             for i in 0..self.operations.len() {
                 match self.operations[i] {
                     AlignmentOperation::Match => {
-                        x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[x[x_i]])));
+                        x_pretty.push(x[x_i] as char);
                         x_i += 1;
 
                         inb_pretty.push('|');
 
-                        y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[y[y_i]])));
+                        y_pretty.push(y[y_i] as char);
                         y_i += 1;
                     }
                     AlignmentOperation::Mismatch => {
-                        x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[x[x_i]])));
+                        x_pretty.push(x[x_i] as char);
                         x_i += 1;
 
                         inb_pretty.push('\\');
 
-                        y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[y[y_i]])));
+                        y_pretty.push(y[y_i] as char);
                         y_i += 1;
                     }
                     AlignmentOperation::Insert => {
                         x_pretty.push('-');
 
-                        inb_pretty.push('x');
+                        inb_pretty.push('+');
 
-                        y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[y[y_i]])));
+                        y_pretty.push(y[y_i] as char);
                         y_i += 1;
                     }
                     AlignmentOperation::Delete => {
-                        x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[x[x_i]])));
+                        x_pretty.push(x[x_i] as char);
                         x_i += 1;
 
-                        inb_pretty.push('+');
+                        inb_pretty.push('x');
 
                         y_pretty.push('-');
                     }

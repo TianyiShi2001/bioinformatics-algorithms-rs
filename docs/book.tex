@@ -1,0 +1,166 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{book}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust},
+  pdfauthor={Tianyi Shi},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage{longtable,booktabs}
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{5}
+\usepackage{booktabs}
+\usepackage[margin=1.2in]{geometry}
+\usepackage[]{natbib}
+\bibliographystyle{apalike}
+
+\title{Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust}
+\author{Tianyi Shi}
+\date{2020-10-01}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{1}
+\tableofcontents
+}
+\hypertarget{intro}{%
+\chapter{Introduction}\label{intro}}
+
+\hypertarget{rationale}{%
+\section{Rationale}\label{rationale}}
+
+Bioinformatics algorithms and utilities are implemented in many programming languages. Notable libraries include SeqAn (C++), Biopython, Bioperl and BioRuby.
+
+Production-ready bioinformatics libraries (obviously) tend to provide only the most efficient algorithm for every problem in bioinformatics. It is only to a limited extent can their source code and documentation help learning bioinformatics properly.
+
+On the other hand, bioinformatics textbooks typically introduce readers to only a few historically important algorithms, which often do not represent the current most efficient solution. Take pairwise alignment for example:
+
+\begin{longtable}[]{@{}cccc@{}}
+\toprule
+Author & features & Jones \& Pevzner (2004) & Sung (2010)\tabularnewline
+\midrule
+\endhead
+Needleman-Wunsch & global, \textbf{\emph{O(nm)}} space & ✅ & ✅\tabularnewline
+Smith-Waterman & local, \textbf{\emph{O(nm)}} space & ✅ & ✅\tabularnewline
+Gotoh & affine gap, \textbf{\emph{O(nm)}} space & ✅ & ✅\tabularnewline
+Hirshberg & global, \textbf{\emph{O(n)}} space & ✅ & ✅\tabularnewline
+Myers-Miller (1988) & global, affine gap, \textbf{\emph{O(n)}} space & ❌ & ❌\tabularnewline
+Huang (1991) & local, affine gap, \textbf{\emph{O(n)}} space & ❌ & ❌\tabularnewline
+\texttt{(more\ to\ be\ added} & & &\tabularnewline
+\bottomrule
+\end{longtable}
+
+I learn bioinformatic not only from textbooks but also from articles, and I found it enlightening to implement the variety of algorithms not mentioned in textbooks. I thought would be wasteful to discard these implementations after I've mastered their principles, so I created this repository in the hope that thses will help other bioinformatics learners.
+
+\hypertarget{what-to-expect-from-this-repository}{%
+\chapter{What to expect from this repository}\label{what-to-expect-from-this-repository}}
+
+\begin{itemize}
+\tightlist
+\item
+  Organised into this hierarchical order: \texttt{category/{[}subcategory{]}/problem/solution.rs}, where each \texttt{problem} usually have multiple \texttt{solution}s, ranging from ``naïve'' ones to advanced, practical ones.
+\item
+  Implementation details will be documented thoroughly in rustdoc (may be reorganised into a \textbf{mdbook} in the future). The documentation should guide the readers to implement the algorithms themselves.
+\item
+  Most solutions have corresponding original literature, and readers are encouraged to read them.
+\item
+  Comments in the source code will be verbose.
+\item
+  Clarity is more important than efficiency (although an optimised solution will be provided for each problem)
+\item
+  All functions, structs, etc. are made public so that you can play around with them easily, but it should be emphasized again that you should not depend on any part of this repository for your development. Use \textbf{rust-bio} instead.
+\end{itemize}
+
+\hypertarget{why-rust}{%
+\section{Why Rust?}\label{why-rust}}
+
+Personally, I think \textbf{Rust is the best programming language for bioinformatics}, for several simple but justifiable reasons:
+
+\begin{itemize}
+\item
+  Python is slow. I do not say that Python is a bad language. Python is a great language for begginners in programming thanks to its simple syntax, and is also useful in situations where the program's API is fast-changing, especially in web services. On the contraty, in bioinformatics, execution speed is the priority, and the algorithms are updated relatively slowly, some of which haven't been improved for years). The same argument applies to Ruby, Perl, etc.
+\item
+  Rust is \textbf{really fast.} According to \href{https://benchmarksgame-team.pages.debian.net/benchmarksgame/which-programs-are-fastest.html}{the computer language benchmarks game}, Rust is already in the same tier as C and C++ (the other two emerging compiled languages, Julia and Go, is about 1.5 and 2.5 times slower).
+\item
+  Rust is \textbf{much easier to write than C/C++}. Well, frankly, I can't write C/C++. As a biochemistry specialist with only programming experience in Python, R and Javascript, I felt uncomfortable while I was struggling to learn C/C++ for the following reasons:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    There isn't a central package registry/index equivalent to \textbf{PyPI}, \textbf{CRAN} or \textbf{npm}.
+  \item
+    \href{https://stackoverflow.com/questions/34967756/where-is-the-official-c-documentation\#:~:text=C\%2B\%2B\%20is\%20not\%20a\%20product\%20and\%20there\%20is,etc.\%29.\%20–\%20sorush-r\%20Jan\%2023\%20\%2716\%20at\%2019\%3A28}{There isn't even an ``official documentation'',} not to mention an official tutorial. Popular books, such as \emph{C++ Primer} by Stanley B. Lippman et al and \emph{The C++ Standard Library} by Nicolai M. Josuttis, are not free. In contrast, many easy-to-read and up-to-date official or community resources exist for Python, JS and R, such as \href{https://javascript.info}{javascript.info} and \href{https://r4ds.had.co.nz}{r4ds}. In fact, an important reason I like R is its ease of sharing and obtaining knowledge thanks to RMarkdown and \href{https://bookdown.org}{Bookdown}.
+  \end{itemize}
+
+  I was wondering, \textbf{``do low-level, fast languages have to be that inconvinient? Even if a central package registry isn't suitable for reasons currently unknown to me, it is technically difficult even to provide an official tutorial?''} It turns out that the answer is ``no''! Rust combines the best parts of C/C++ and the best parts of high-level programming languages. Honestly, I would say Rust's packaging and documentation system is even better than Python. In addition to its clean and easy syntax, Rust has official \textbf{tutorials} (not ``documentation'') \href{https://doc.rust-lang.org/book/}{The Book} and \href{https://doc.rust-lang.org/nomicon/}{Rustonomicon}. With all these nice features, Rust isn't much more difficult to write than Python, at least for me. Rust deserves to be the most loved language according to \href{https://insights.stackoverflow.com/survey/2020\#technology-most-loved-dreaded-and-wanted-languages-loved}{Stack Overflow's survey} for 5 years running.
+\item
+  To summarise, bioinformatics algorithms need to be fast, and biologists (or anyone not specialised in computer science itself) want simple stuff. The language that best fits the two criteria is definitely Rust.
+\end{itemize}
+
+As a reference, here is the star history of \textbf{Rust-Bio} and a few other bioinformatics package suites:
+
+\includegraphics[width=1\linewidth]{img/star-history-2020-10}
+
+  \bibliography{bib/general.bib}
+
+\end{document}

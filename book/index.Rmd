@@ -1,0 +1,11 @@
+---
+title: "Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust"
+author: "Tianyi Shi"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+bibliography: [bib/general.bib]
+biblio-style: apalike
+link-citations: yes
+description: "Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust"
+---

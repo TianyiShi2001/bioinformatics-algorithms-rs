@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</title>
+  <meta name="description" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta name="generator" content="bookdown 0.20 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta property="og:type" content="book" />
+  
+  
+  <meta property="og:description" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  
+  <meta name="twitter:description" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  
+
+<meta name="author" content="Tianyi Shi" />
+
+
+<meta name="date" content="2020-10-01" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+
+<link rel="next" href="what-to-expect-from-this-repository.html"/>
+<script src="libs/header-attrs-2.4/header-attrs.js"></script>
+<script src="libs/jquery-2.2.3/jquery.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+
+<script src="libs/accessible-code-block-0.0.1/empty-anchor.js"></script>
+
+
+
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li><a href="./">Bioinformatics Algorithms</a></li>
+
+<li class="divider"></li>
+<li class="chapter" data-level="1" data-path="intro.html"><a href="intro.html"><i class="fa fa-check"></i><b>1</b> Introduction</a>
+<ul>
+<li class="chapter" data-level="1.1" data-path="intro.html"><a href="intro.html#rationale"><i class="fa fa-check"></i><b>1.1</b> Rationale</a></li>
+</ul></li>
+<li class="chapter" data-level="2" data-path="what-to-expect-from-this-repository.html"><a href="what-to-expect-from-this-repository.html"><i class="fa fa-check"></i><b>2</b> What to expect from this repository</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="what-to-expect-from-this-repository.html"><a href="what-to-expect-from-this-repository.html#why-rust"><i class="fa fa-check"></i><b>2.1</b> Why Rust?</a></li>
+</ul></li>
+<li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
+<li class="divider"></li>
+<!--<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>-->
+
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="header">
+<h1 class="title">Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</h1>
+<p class="author"><em>Tianyi Shi</em></p>
+<p class="date"><em>2020-10-01</em></p>
+</div>
+<div id="intro" class="section level1" number="1">
+<h1><span class="header-section-number">Chapter 1</span> Introduction</h1>
+<div id="rationale" class="section level2" number="1.1">
+<h2><span class="header-section-number">1.1</span> Rationale</h2>
+<p>Bioinformatics algorithms and utilities are implemented in many programming languages. Notable libraries include SeqAn (C++), Biopython, Bioperl and BioRuby.</p>
+<p>Production-ready bioinformatics libraries (obviously) tend to provide only the most efficient algorithm for every problem in bioinformatics. It is only to a limited extent can their source code and documentation help learning bioinformatics properly.</p>
+<p>On the other hand, bioinformatics textbooks typically introduce readers to only a few historically important algorithms, which often do not represent the current most efficient solution. Take pairwise alignment for example:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Author</th>
+<th align="center">features</th>
+<th align="center">Jones &amp; Pevzner (2004)</th>
+<th align="center">Sung (2010)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Needleman-Wunsch</td>
+<td align="center">global, <strong><em>O(nm)</em></strong> space</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr class="even">
+<td align="center">Smith-Waterman</td>
+<td align="center">local, <strong><em>O(nm)</em></strong> space</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr class="odd">
+<td align="center">Gotoh</td>
+<td align="center">affine gap, <strong><em>O(nm)</em></strong> space</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr class="even">
+<td align="center">Hirshberg</td>
+<td align="center">global, <strong><em>O(n)</em></strong> space</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr class="odd">
+<td align="center">Myers-Miller (1988)</td>
+<td align="center">global, affine gap, <strong><em>O(n)</em></strong> space</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+</tr>
+<tr class="even">
+<td align="center">Huang (1991)</td>
+<td align="center">local, affine gap, <strong><em>O(n)</em></strong> space</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>(more to be added</code></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+<p>I learn bioinformatic not only from textbooks but also from articles, and I found it enlightening to implement the variety of algorithms not mentioned in textbooks. I thought would be wasteful to discard these implementations after I’ve mastered their principles, so I created this repository in the hope that thses will help other bioinformatics learners.</p>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+
+<a href="what-to-expect-from-this-repository.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/lunr.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": ["book.pdf", "book.epub"],
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>
