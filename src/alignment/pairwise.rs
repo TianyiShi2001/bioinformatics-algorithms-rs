@@ -61,13 +61,88 @@ pub enum AlignmentMode {
 pub struct Alignment<'a> {
     pub x: Seq<'a>,
     pub y: Seq<'a>,
-    score: Score,
+    pub score: Score,
     pub xstart: usize,
     pub ystart: usize,
     pub xend: usize,
     pub yend: usize,
     pub operations: Vec<AlignmentOperation>,
     pub mode: AlignmentMode,
+}
+
+impl<'a> Alignment<'a> {
+    pub fn new(x: Seq<'a>, y: Seq<'a>) -> Self {
+        Self {
+            x,
+            y,
+            score: 0,
+            xstart: 0,
+            ystart: 0,
+            xend: x.len(),
+            yend: y.len(),
+            operations: Vec::new(),
+            mode: AlignmentMode::Global,
+        }
+    }
+
+    pub fn global(x: Seq<'a>, y: Seq<'a>) -> Self {
+        Alignment::new(x, y).mode(AlignmentMode::Global)
+    }
+
+    pub fn local(x: Seq<'a>, y: Seq<'a>) -> Self {
+        Alignment::new(x, y).mode(AlignmentMode::Local)
+    }
+
+    pub fn semiglobal(x: Seq<'a>, y: Seq<'a>) -> Self {
+        Alignment::new(x, y).mode(AlignmentMode::Semiglobal)
+    }
+
+    pub fn mode(mut self, mode: AlignmentMode) -> Self {
+        self.mode = mode;
+        self
+    }
+
+    pub fn score(mut self, score: Score) -> Self {
+        self.score = score;
+        self
+    }
+
+    pub fn operations(mut self, ops: Vec<AlignmentOperation>) -> Self {
+        self.operations = ops;
+        self
+    }
+
+    pub fn xstart(mut self, p: usize) -> Self {
+        self.xstart = p;
+        self
+    }
+
+    pub fn xend(mut self, p: usize) -> Self {
+        self.xend = p;
+        self
+    }
+
+    pub fn ystart(mut self, p: usize) -> Self {
+        self.ystart = p;
+        self
+    }
+
+    pub fn yend(mut self, p: usize) -> Self {
+        self.xend = p;
+        self
+    }
+
+    pub fn start(self, x: usize, y: usize) -> Self {
+        self.xstart(x).ystart(y)
+    }
+
+    pub fn end(self, x: usize, y: usize) -> Self {
+        self.xend(x).yend(y)
+    }
+
+    pub fn termini(self, start: (usize, usize), end: (usize, usize)) -> Self {
+        self.start(start.0, start.1).end(end.0, end.1)
+    }
 }
 
 impl PartialEq for Alignment<'_> {
@@ -80,15 +155,16 @@ impl PartialEq for Alignment<'_> {
     ///
     /// are equal, and the number of inserts, deletes, matches, mismatches each are equal
     fn eq(&self, other: &Self) -> bool {
-        if !(self.x == other.x
-            && self.y == other.y
-            && self.score == other.score
-            && self.xstart == other.xstart
-            && self.xend == other.xend
-            && self.ystart == other.ystart
-            && self.yend == other.yend
-            && self.mode == other.mode)
-        {
+        if !(
+            // *self.x == *other.x
+            // && *self.y == *other.y &&
+            self.score == other.score
+                && self.xstart == other.xstart
+                && self.xend == other.xend
+                && self.ystart == other.ystart
+                && self.yend == other.yend
+                && self.mode == other.mode
+        ) {
             return false;
         }
         let (o1, o2) = (&self.operations, &other.operations);
@@ -102,6 +178,15 @@ impl PartialEq for Alignment<'_> {
                 AlignmentOperation::Delete => d += 1,
                 AlignmentOperation::Mismatch => s += 1,
                 AlignmentOperation::Match => m += 1,
+                _ => unreachable!(),
+            }
+        }
+        for o in o2 {
+            match o {
+                AlignmentOperation::Insert => i -= 1,
+                AlignmentOperation::Delete => d -= 1,
+                AlignmentOperation::Mismatch => s -= 1,
+                AlignmentOperation::Match => m -= 1,
                 _ => unreachable!(),
             }
         }
@@ -171,7 +256,7 @@ impl<'a> fmt::Display for Alignment<'a> {
                         y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[y[y_i]])));
                         y_i += 1;
                     }
-                    AlignmentOperation::Delete => {
+                    AlignmentOperation::Insert => {
                         x_pretty.push('-');
 
                         inb_pretty.push('x');
@@ -179,7 +264,7 @@ impl<'a> fmt::Display for Alignment<'a> {
                         y_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[y[y_i]])));
                         y_i += 1;
                     }
-                    AlignmentOperation::Insert => {
+                    AlignmentOperation::Delete => {
                         x_pretty.push_str(&format!("{}", String::from_utf8_lossy(&[x[x_i]])));
                         x_i += 1;
 

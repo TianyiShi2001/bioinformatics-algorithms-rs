@@ -516,9 +516,9 @@ impl<F: MatchFunc + Sync> Aligner<F> {
     /// and returned
     fn find_semiglobal_score_and_termini(&self, x: Seq, y: Seq) -> (i32, usize, usize) {
         let (m, n) = (x.len(), y.len());
-        let mut cc: Vec<i32> = vec![0; n + 1]; //                           32 * n bits
+        let mut cc: Vec<i32> = Vec::with_capacity(n + 1); //                32 * n bits
         let mut dd: Vec<i32> = vec![MIN_SCORE; n + 1]; //                   32 * n bits
-        let mut x_origin_cc: Vec<usize> = (0..=n).into_iter().collect(); // usize * n bits
+        let mut x_origin_cc: Vec<usize> = vec![0; n + 1]; //                usize * n bits
         let mut x_origin_dd: Vec<usize> = vec![0; n + 1]; //                usize * n bits
         let mut e: i32; // I(i, j-1)
         let mut e_x_origin: usize;
@@ -528,15 +528,20 @@ impl<F: MatchFunc + Sync> Aligner<F> {
         let mut s_x_origin: usize; // x_origin of C(i-1, j-1)
         let mut p: u8;
         let mut q: u8;
-        let mut t = self.scoring.gap_open;
         let mut xstart = 0;
         let mut xend = m;
         let mut max_last_col = MIN_SCORE;
-        for i in 1..=m {
-            s = cc[0];
+        let mut t = self.scoring.gap_open;
+        cc.push(0);
+        for _j in 1..=n {
             t += self.scoring.gap_extend;
-            c = t;
-            cc[0] = c;
+            cc.push(t);
+        }
+        for i in 1..=m {
+            s = 0; //cc[0];
+                   // t += self.scoring.gap_extend;
+            c = 0; // t;
+            cc[0] = 0; // c;
             e = MIN_SCORE;
             s_x_origin = i - 1;
             c_x_origin = i;
@@ -578,7 +583,7 @@ impl<F: MatchFunc + Sync> Aligner<F> {
                     // c + self.scoring.xclip_suffix
                     max_last_col = c;
                     xstart = c_x_origin;
-                    xend = j;
+                    xend = i;
                 }
             }
         }
@@ -769,218 +774,211 @@ impl<F: MatchFunc + Sync> Aligner<F> {
     }
 }
 
-// // adapted from pariwise/mod.rs
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     use crate::alignment::pairwise::AlignmentOperation::*;
-//     use std::iter::repeat;
+// adapted from pariwise/mod.rs
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::alignment::pairwise::{Alignment, AlignmentOperation::*};
+    use std::iter::repeat;
 
-//     // fn strings_to_operations(x: Seq, y: Seq) -> Vec<AlignmentOperation> {
-//     //     assert!(x.len() == y.len());
-//     //     for i in x.len() {
-//     //         x[i]
-//     //     }
-//     // }
+    #[test]
+    fn test_global_affine_ins() {
+        let x = b"ACGAGAACA";
+        let y = b"ACGACA";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -3i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.global(x, y);
 
-//     #[test]
-//     fn test_global_affine_ins() {
-//         let x = b"ACGAGAACA";
-//         let y = b"ACGACA";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -3i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.global(x, y);
+        println!("{}", alignment);
+        assert_eq!(
+            alignment,
+            Alignment::global(x, y).score(-2).operations(vec![
+                Match, Match, Match, Delete, Delete, Delete, Match, Match, Match
+            ])
+        );
+    }
 
-//         println!("aln:\n{}", alignment.pretty(x, y));
-//         assert_eq!(
-//             alignment.operations,
-//             [Match, Match, Match, Delete, Delete, Delete, Match, Match, Match]
-//         );
-//     }
+    #[test]
+    fn test_global_affine_ins2() {
+        let x = b"AGATAGATAGATAGGGAGTTGTGTAGATGATCCACAGT";
+        let y = b"AGATAGATAGATGTAGATGATCCACAGT";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.global(x, y);
 
-//     #[test]
-//     fn test_global_affine_ins2() {
-//         let x = b"AGATAGATAGATAGGGAGTTGTGTAGATGATCCACAGT";
-//         let y = b"AGATAGATAGATGTAGATGATCCACAGT";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.global(x, y);
+        println!("{:?}", alignment);
+        println!("{}", alignment);
 
-//         println!("aln:\n{}", alignment.pretty(x, y));
+        let mut correct = Vec::new();
+        correct.extend(repeat(Match).take(11));
+        correct.extend(repeat(Delete).take(10));
+        correct.extend(repeat(Match).take(17));
 
-//         let mut correct = Vec::new();
-//         correct.extend(repeat(Match).take(11));
-//         correct.extend(repeat(Ins).take(10));
-//         correct.extend(repeat(Match).take(17));
+        assert_eq!(
+            alignment,
+            Alignment::global(x, y).score(13).operations(correct)
+        );
+    }
 
-//         assert_eq!(alignment.operations, correct);
-//     }
+    #[test]
+    fn test_global() {
+        let x = b"ACCGTGGAT";
+        let y = b"AAAAACCGTTGAT";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.global(x, y);
 
-//     #[test]
-//     fn test_global() {
-//         let x = b"ACCGTGGAT";
-//         let y = b"AAAAACCGTTGAT";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.global(x, y);
+        println!("{}", alignment);
 
-//         println!("\naln:\n{}", alignment.pretty(x, y));
-//         assert_eq!(alignment.ystart, 0);
-//         assert_eq!(alignment.xstart, 0);
-//         // assert_eq!(
-//         //     alignment.operations,
-//         //     [Del, Del, Del, Del, Match, Match, Match, Match, Match, Subst, Match, Match, Match,]
-//         // );
-//         assert!(equivalent_operations(
-//             &alignment.operations,
-//             &[Del, Del, Del, Del, Match, Match, Match, Match, Match, Subst, Match, Match, Match,]
-//         ))
-//     }
+        assert_eq!(
+            alignment,
+            Alignment::global(x, y).score(-2).operations(vec![
+                Insert, Insert, Insert, Insert, Match, Match, Match, Match, Match, Mismatch, Match,
+                Match, Match,
+            ])
+        );
+    }
 
-//     // #[test]
-//     // fn test_blosum62() {
-//     //     let x = b"AAAA";
-//     //     let y = b"AAAA";
-//     //     let score = &blosum62;
-//     //     let aligner = Aligner::new(-5, -1, score);
-//     //     let alignment = aligner.global(x, y);
-//     //     assert_eq!(alignment.ystart, 0);
-//     //     assert_eq!(alignment.xstart, 0);
-//     //     assert_eq!(alignment.score, 16);
-//     //     assert_eq!(alignment.operations, [Match, Match, Match, Match]);
-//     // }
+    // #[test]
+    // fn test_blosum62() {
+    //     let x = b"AAAA";
+    //     let y = b"AAAA";
+    //     let score = &blosum62;
+    //     let aligner = Aligner::new(-5, -1, score);
+    //     let alignment = aligner.global(x, y);
+    //     assert_eq!(alignment.ystart, 0);
+    //     assert_eq!(alignment.xstart, 0);
+    //     assert_eq!(alignment.score, 16);
+    //     assert_eq!(alignment, [Match, Match, Match, Match]);
+    // }
 
-//     #[test]
-//     fn test_issue11() {
-//         let y = b"TACC"; //GTGGAC";
-//         let x = b"AAAAACC"; //GTTGACGCAA";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.global(x, y);
-//         assert_eq!(alignment.ystart, 0);
-//         assert_eq!(alignment.xstart, 0);
-//         assert_eq!(
-//             alignment.operations,
-//             [Ins, Ins, Ins, Subst, Match, Match, Match]
-//         );
-//     }
+    #[test]
+    fn test_issue11() {
+        let y = b"TACC"; //GTGGAC";
+        let x = b"AAAAACC"; //GTTGACGCAA";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.global(x, y);
+        assert_eq!(alignment.ystart, 0);
+        assert_eq!(alignment.xstart, 0);
+        assert_eq!(
+            alignment,
+            Alignment::global(x, y)
+                .score(-6)
+                .operations(vec![Delete, Delete, Delete, Mismatch, Match, Match, Match])
+        );
+    }
 
-//     #[test]
-//     fn test_left_aligned_del() {
-//         let x = b"GTGCATCATGTG";
-//         let y = b"GTGCATCATCATGTG";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.global(x, y);
-//         println!("\naln:\n{}", alignment.pretty(x, y));
+    #[test]
+    fn test_left_aligned_del() {
+        let x = b"GTGCATCATGTG";
+        let y = b"GTGCATCATCATGTG";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.global(x, y);
+        println!("{}", alignment);
 
-//         assert_eq!(alignment.ystart, 0);
-//         assert_eq!(alignment.xstart, 0);
-//         // assert_eq!(
-//         //     alignment.operations,
-//         //     [
-//         //         Match, Match, Match, Del, Del, Del, Match, Match, Match, Match, Match, Match,
-//         //         Match, Match, Match,
-//         //     ]
-//         // );
-//         assert!(equivalent_operations(
-//             &alignment.operations,
-//             &[
-//                 Match, Match, Match, Del, Del, Del, Match, Match, Match, Match, Match, Match,
-//                 Match, Match, Match,
-//             ]
-//         ))
-//     }
+        assert_eq!(
+            alignment,
+            Alignment::global(x, y).score(4).operations(vec![
+                Match, Match, Match, Insert, Insert, Insert, Match, Match, Match, Match, Match,
+                Match, Match, Match, Match,
+            ])
+        )
+    }
 
-//     // Test that trailing deletions are correctly handled
-//     // in global mode
-//     #[test]
-//     fn test_global_right_del() {
-//         let x = b"AACCACGTACGTGGGGGGA";
-//         let y = b"CCACGTACGT";
+    // Test that trailing deletions are correctly handled
+    // in global mode
+    #[test]
+    fn test_global_right_del() {
+        let x = b"AACCACGTACGTGGGGGGA";
+        let y = b"CCACGTACGT";
 
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.global(x, y);
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.global(x, y);
 
-//         println!("\naln:\n{}", alignment.pretty(x, y));
+        println!("{}", alignment);
 
-//         println!("score:{}", alignment.score);
-//         assert_eq!(alignment.score, -9);
-//         assert_eq!(alignment.ystart, 0);
-//         assert_eq!(alignment.xstart, 0);
-//         assert_eq!(
-//             alignment.operations,
-//             [
-//                 Ins, Ins, Match, Match, Match, Match, Match, Match, Match, Match, Match, Match,
-//                 Ins, Ins, Ins, Ins, Ins, Ins, Ins,
-//             ]
-//         );
-//     }
+        assert_eq!(
+            alignment,
+            Alignment::global(x, y).score(-9).operations(vec![
+                Delete, Delete, Match, Match, Match, Match, Match, Match, Match, Match, Match,
+                Match, Delete, Delete, Delete, Delete, Delete, Delete, Delete,
+            ])
+        );
+    }
 
-//     #[test]
-//     fn test_left_aligned_ins() {
-//         let x = b"GTGCATCATCATGTG";
-//         let y = b"GTGCATCATGTG";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.global(x, y);
-//         println!("\naln:\n{}", alignment.pretty(x, y));
+    #[test]
+    fn test_left_aligned_ins() {
+        let x = b"GTGCATCATCATGTG";
+        let y = b"GTGCATCATGTG";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.global(x, y);
+        println!("{}", alignment);
 
-//         assert_eq!(alignment.ystart, 0);
-//         assert_eq!(alignment.xstart, 0);
-//         assert_eq!(
-//             alignment.operations,
-//             [
-//                 Match, Match, Match, Ins, Ins, Ins, Match, Match, Match, Match, Match, Match,
-//                 Match, Match, Match,
-//             ]
-//         );
-//     }
+        assert_eq!(alignment.ystart, 0);
+        assert_eq!(alignment.xstart, 0);
+        assert_eq!(
+            alignment,
+            Alignment::global(x, y).score(4).operations(vec![
+                Match, Match, Match, Delete, Delete, Delete, Match, Match, Match, Match, Match,
+                Match, Match, Match, Match,
+            ])
+        );
+    }
 
-//     // semiglobal
-//     #[test]
-//     fn test_semiglobal() {
-//         let x = b"ACCGTGGAT";
-//         let y = b"AAAAACCGTTGAT";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let mut aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.semiglobal(x, y);
-//         println!("{:?}", alignment);
-//         println!("{}", alignment.pretty(x, y));
-//         assert_eq!(alignment.ystart, 4);
-//         assert_eq!(alignment.xstart, 0);
-//         assert_eq!(
-//             alignment.operations,
-//             [Match, Match, Match, Match, Match, Subst, Match, Match, Match,]
-//         );
-//     }
+    // semiglobal
+    #[test]
+    fn test_semiglobal() {
+        let x = b"AAAAACCGTTGAT";
+        let y = b"ACCGTGGAT";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.semiglobal(x, y);
+        println!("{}", alignment);
+        assert_eq!(
+            alignment,
+            Alignment::semiglobal(x, y)
+                .score(7)
+                .xstart(4)
+                .operations(vec![
+                    Match, Match, Match, Match, Match, Mismatch, Match, Match, Match,
+                ])
+        );
+    }
 
-//     // local
+    // local
 
-//     #[test]
-//     fn test_local_affine_ins2() {
-//         let x = b"ACGTATCATAGATAGATAGGGTTGTGTAGATGATCCACAG";
-//         let y = b"CGTATCATAGATAGATGTAGATGATCCACAGT";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.local(x, y);
-//         assert_eq!(alignment.xstart, 1);
-//         assert_eq!(alignment.ystart, 0);
-//     }
+    #[test]
+    fn test_local_affine_ins2() {
+        let x = b"ACGTATCATAGATAGATAGGGTTGTGTAGATGATCCACAG";
+        let y = b"CGTATCATAGATAGATGTAGATGATCCACAGT";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.local(x, y);
+        assert_eq!(alignment.xstart, 1);
+        assert_eq!(alignment.ystart, 0);
+    }
 
-//     #[test]
-//     fn test_local() {
-//         let x = b"ACCGTGGAT";
-//         let y = b"AAAAACCGTTGAT";
-//         let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
-//         let aligner = Aligner::new(-5, -1, score);
-//         let alignment = aligner.local(x, y);
-//         assert_eq!(alignment.ystart, 4);
-//         assert_eq!(alignment.xstart, 0);
-//         assert_eq!(
-//             alignment.operations,
-//             [Match, Match, Match, Match, Match, Subst, Match, Match, Match,]
-//         );
-//     }
-// }
+    #[test]
+    fn test_local() {
+        let x = b"ACCGTGGAT";
+        let y = b"AAAAACCGTTGAT";
+        let score = |a: u8, b: u8| if a == b { 1i32 } else { -1i32 };
+        let aligner = Aligner::new(-5, -1, score);
+        let alignment = aligner.local(x, y);
+        println!("{}", alignment);
+        assert_eq!(
+            alignment,
+            Alignment::local(x, y)
+                .xstart(0)
+                .ystart(4)
+                .score(7)
+                .operations(vec![
+                    Match, Match, Match, Match, Match, Mismatch, Match, Match, Match,
+                ])
+        );
+    }
+}
