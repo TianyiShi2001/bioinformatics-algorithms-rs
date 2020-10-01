@@ -22,13 +22,13 @@
 //! # Learning Outcomes
 //!
 //! - The principle of the Smith-Waterman local alignment algorithm, its time and space complexity
-//! 
+//!
 //! # Examples
-//! 
+//!
 //! No examples until the directory structure is fixed
 #![allow(non_snake_case)]
 use super::LocalAlign;
-use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFunc, Score, Seq, MatchParams};
+use super::{Alignment, AlignmentMode, AlignmentOperation, MatchFunc, MatchParams, Score, Seq};
 use crate::utils::matrix::Matrix;
 
 /// Smith-Waterman Aligner.
@@ -174,8 +174,7 @@ impl Aligner<MatchParams> {
     pub fn from_scores(match_score: Score, mismatch_score: Score, gap_penalty: Score) -> Self {
         Aligner {
             match_fn: MatchParams::new(match_score, mismatch_score),
-            gap_penalty
+            gap_penalty,
         }
     }
 }
-
