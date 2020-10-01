@@ -4,21 +4,21 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Chapter 1 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</title>
-  <meta name="description" content="Chapter 1 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <title>Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</title>
+  <meta name="description" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   <meta name="generator" content="bookdown 0.20 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="Chapter 1 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta property="og:title" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   <meta property="og:type" content="book" />
   
   
-  <meta property="og:description" content="Chapter 1 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta property="og:description" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Chapter 1 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta name="twitter:title" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   
-  <meta name="twitter:description" content="Chapter 1 What to expect from this repository | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta name="twitter:description" content="Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   
 
 <meta name="author" content="Tianyi Shi" />
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="index.html"/>
-<link rel="next" href="sequence-alignment.html"/>
+
+<link rel="next" href="introduction.html"/>
 <script src="libs/header-attrs-2.4/header-attrs.js"></script>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -71,15 +71,16 @@
 <li><a href="./">Bioinformatics Algorithms</a></li>
 
 <li class="divider"></li>
-<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Introduction</a>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Preamble</a>
 <ul>
-<li class="chapter" data-level="0.1" data-path="index.html"><a href="index.html#rationale"><i class="fa fa-check"></i><b>0.1</b> Rationale</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#rationale"><i class="fa fa-check"></i>Rationale</a></li>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#why-rust"><i class="fa fa-check"></i>Why Rust?</a></li>
 </ul></li>
-<li class="chapter" data-level="1" data-path="what-to-expect-from-this-repository.html"><a href="what-to-expect-from-this-repository.html"><i class="fa fa-check"></i><b>1</b> What to expect from this repository</a>
+<li class="chapter" data-level="" data-path="introduction.html"><a href="introduction.html"><i class="fa fa-check"></i>Introduction</a>
 <ul>
-<li class="chapter" data-level="1.1" data-path="what-to-expect-from-this-repository.html"><a href="what-to-expect-from-this-repository.html#why-rust"><i class="fa fa-check"></i><b>1.1</b> Why Rust?</a></li>
+<li class="chapter" data-level="" data-path="introduction.html"><a href="introduction.html#organsation-of-the-source-code"><i class="fa fa-check"></i>Organsation of the Source Code</a></li>
 </ul></li>
-<li class="chapter" data-level="2" data-path="sequence-alignment.html"><a href="sequence-alignment.html"><i class="fa fa-check"></i><b>2</b> Sequence Alignment</a></li>
+<li class="chapter" data-level="1" data-path="sequence-alignment.html"><a href="sequence-alignment.html"><i class="fa fa-check"></i><b>1</b> Sequence Alignment</a></li>
 <li class="chapter" data-level="" data-path="references.html"><a href="references.html"><i class="fa fa-check"></i>References</a></li>
 <li class="divider"></li>
 <!--<li><a href="https://github.com/rstudio/bookdown" target="blank">Published with bookdown</a></li>-->
@@ -101,18 +102,76 @@
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="what-to-expect-from-this-repository" class="section level1" number="1">
-<h1><span class="header-section-number">Chapter 1</span> What to expect from this repository</h1>
-<ul>
-<li>Organised into this hierarchical order: <code>category/[subcategory]/problem/solution.rs</code>, where each <code>problem</code> usually have multiple <code>solution</code>s, ranging from “naïve” ones to advanced, practical ones.</li>
-<li>Implementation details will be documented thoroughly in rustdoc (may be reorganised into a <strong>mdbook</strong> in the future). The documentation should guide the readers to implement the algorithms themselves.</li>
-<li>Most solutions have corresponding original literature, and readers are encouraged to read them.</li>
-<li>Comments in the source code will be verbose.</li>
-<li>Clarity is more important than efficiency (although an optimised solution will be provided for each problem)</li>
-<li>All functions, structs, etc. are made public so that you can play around with them easily, but it should be emphasized again that you should not depend on any part of this repository for your development. Use <strong>rust-bio</strong> instead.</li>
-</ul>
-<div id="why-rust" class="section level2" number="1.1">
-<h2><span class="header-section-number">1.1</span> Why Rust?</h2>
+<div id="header">
+<h1 class="title">Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</h1>
+<p class="author"><em>Tianyi Shi</em></p>
+<p class="date"><em>2020-10-01</em></p>
+</div>
+<div id="preamble" class="section level1 unnumbered" number="">
+<h1>Preamble</h1>
+<div id="rationale" class="section level2 unnumbered" number="">
+<h2>Rationale</h2>
+<p>Bioinformatics algorithms and utilities are implemented in many programming languages. Notable libraries include SeqAn (C++), Biopython, Bioperl and BioRuby.</p>
+<p>Production-ready bioinformatics libraries (obviously) tend to provide only the most efficient algorithm for every problem in bioinformatics. It is only to a limited extent can their source code and documentation help learning bioinformatics properly.</p>
+<p>On the other hand, bioinformatics textbooks typically introduce readers to only a few historically important algorithms, which often do not represent the current most efficient solution. Take pairwise alignment for example:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="center">Author</th>
+<th align="center">features</th>
+<th align="center">Jones &amp; Pevzner (2004)</th>
+<th align="center">Sung (2010)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">Needleman-Wunsch</td>
+<td align="center">global, <strong><em>O(nm)</em></strong> space</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr class="even">
+<td align="center">Smith-Waterman</td>
+<td align="center">local, <strong><em>O(nm)</em></strong> space</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr class="odd">
+<td align="center">Gotoh</td>
+<td align="center">affine gap, <strong><em>O(nm)</em></strong> space</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr class="even">
+<td align="center">Hirshberg</td>
+<td align="center">global, <strong><em>O(n)</em></strong> space</td>
+<td align="center">✅</td>
+<td align="center">✅</td>
+</tr>
+<tr class="odd">
+<td align="center">Myers-Miller (1988)</td>
+<td align="center">global, affine gap, <strong><em>O(n)</em></strong> space</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+</tr>
+<tr class="even">
+<td align="center">Huang (1991)</td>
+<td align="center">local, affine gap, <strong><em>O(n)</em></strong> space</td>
+<td align="center">❌</td>
+<td align="center">❌</td>
+</tr>
+<tr class="odd">
+<td align="center"><code>(more to be added</code></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+</tbody>
+</table>
+<p>I learn bioinformatic not only from textbooks but also from articles, and I found it enlightening to implement the variety of algorithms not mentioned in textbooks. I thought would be wasteful to discard these implementations after I’ve mastered their principles, so I created this repository in the hope that thses will help other bioinformatics learners.</p>
+</div>
+<div id="why-rust" class="section level2 unnumbered" number="">
+<h2>Why Rust?</h2>
 <p>Personally, I think <strong>Rust is the best programming language for bioinformatics</strong>, for several simple but justifiable reasons:</p>
 <ul>
 <li><p>Python is slow. I do not say that Python is a bad language. Python is a great language for begginners in programming thanks to its simple syntax, and is also useful in situations where the program’s API is fast-changing, especially in web services. On the contraty, in bioinformatics, execution speed is the priority, and the algorithms are updated relatively slowly, some of which haven’t been improved for years). The same argument applies to Ruby, Perl, etc.</p></li>
@@ -127,7 +186,6 @@
 </ul>
 <p>As a reference, here is the star history of <strong>Rust-Bio</strong> and a few other bioinformatics package suites:</p>
 <p><img src="img/star-history-2020-10.png" width="100%" /></p>
-
 </div>
 </div>
             </section>
@@ -135,8 +193,8 @@
           </div>
         </div>
       </div>
-<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-<a href="sequence-alignment.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+
+<a href="introduction.html" class="navigation navigation-next navigation-unique" aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>

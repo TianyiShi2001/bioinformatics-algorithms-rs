@@ -83,11 +83,13 @@
 \setcounter{tocdepth}{1}
 \tableofcontents
 }
-\hypertarget{intro}{%
-\chapter{Introduction}\label{intro}}
+\hypertarget{preamble}{%
+\chapter*{Preamble}\label{preamble}}
+\addcontentsline{toc}{chapter}{Preamble}
 
 \hypertarget{rationale}{%
-\section{Rationale}\label{rationale}}
+\section*{Rationale}\label{rationale}}
+\addcontentsline{toc}{section}{Rationale}
 
 Bioinformatics algorithms and utilities are implemented in many programming languages. Notable libraries include SeqAn (C++), Biopython, Bioperl and BioRuby.
 
@@ -112,27 +114,9 @@ Huang (1991) & local, affine gap, \textbf{\emph{O(n)}} space & ❌ & ❌\tabular
 
 I learn bioinformatic not only from textbooks but also from articles, and I found it enlightening to implement the variety of algorithms not mentioned in textbooks. I thought would be wasteful to discard these implementations after I've mastered their principles, so I created this repository in the hope that thses will help other bioinformatics learners.
 
-\hypertarget{what-to-expect-from-this-repository}{%
-\chapter{What to expect from this repository}\label{what-to-expect-from-this-repository}}
-
-\begin{itemize}
-\tightlist
-\item
-  Organised into this hierarchical order: \texttt{category/{[}subcategory{]}/problem/solution.rs}, where each \texttt{problem} usually have multiple \texttt{solution}s, ranging from ``naïve'' ones to advanced, practical ones.
-\item
-  Implementation details will be documented thoroughly in rustdoc (may be reorganised into a \textbf{mdbook} in the future). The documentation should guide the readers to implement the algorithms themselves.
-\item
-  Most solutions have corresponding original literature, and readers are encouraged to read them.
-\item
-  Comments in the source code will be verbose.
-\item
-  Clarity is more important than efficiency (although an optimised solution will be provided for each problem)
-\item
-  All functions, structs, etc. are made public so that you can play around with them easily, but it should be emphasized again that you should not depend on any part of this repository for your development. Use \textbf{rust-bio} instead.
-\end{itemize}
-
 \hypertarget{why-rust}{%
-\section{Why Rust?}\label{why-rust}}
+\section*{Why Rust?}\label{why-rust}}
+\addcontentsline{toc}{section}{Why Rust?}
 
 Personally, I think \textbf{Rust is the best programming language for bioinformatics}, for several simple but justifiable reasons:
 
@@ -160,6 +144,33 @@ Personally, I think \textbf{Rust is the best programming language for bioinforma
 As a reference, here is the star history of \textbf{Rust-Bio} and a few other bioinformatics package suites:
 
 \includegraphics[width=1\linewidth]{img/star-history-2020-10}
+
+\hypertarget{introduction}{%
+\chapter*{Introduction}\label{introduction}}
+\addcontentsline{toc}{chapter}{Introduction}
+
+\hypertarget{organsation-of-the-source-code}{%
+\section*{Organsation of the Source Code}\label{organsation-of-the-source-code}}
+\addcontentsline{toc}{section}{Organsation of the Source Code}
+
+\begin{itemize}
+\tightlist
+\item
+  Organised into this hierarchical order: \texttt{category/{[}subcategory{]}/problem/solution.rs}, where each \texttt{problem} usually have multiple \texttt{solution}s, ranging from ``naïve'' ones to advanced, practical ones.
+\item
+  Implementation details will be documented thoroughly in rustdoc (may be reorganised into a \textbf{mdbook} in the future). The documentation should guide the readers to implement the algorithms themselves.
+\item
+  Most solutions have corresponding original literature, and readers are encouraged to read them.
+\item
+  Comments in the source code will be verbose.
+\item
+  Clarity is more important than efficiency (although an optimised solution will be provided for each problem)
+\item
+  All functions, structs, etc. are made public so that you can play around with them easily, but it should be emphasized again that you should not depend on any part of this repository for your development. Use \textbf{rust-bio} instead.
+\end{itemize}
+
+\hypertarget{sequence-alignment}{%
+\chapter{Sequence Alignment}\label{sequence-alignment}}
 
   \bibliography{bib/general.bib}
 

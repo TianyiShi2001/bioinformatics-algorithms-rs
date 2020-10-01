@@ -4,21 +4,21 @@
 
   <meta charset="utf-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>References | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</title>
-  <meta name="description" content="References | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <title>Introduction | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust</title>
+  <meta name="description" content="Introduction | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   <meta name="generator" content="bookdown 0.20 and GitBook 2.6.7" />
 
-  <meta property="og:title" content="References | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta property="og:title" content="Introduction | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   <meta property="og:type" content="book" />
   
   
-  <meta property="og:description" content="References | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta property="og:description" content="Introduction | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   
 
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="References | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta name="twitter:title" content="Introduction | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   
-  <meta name="twitter:description" content="References | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
+  <meta name="twitter:description" content="Introduction | Learn Bioinformatics by Writing Entirely Too Many Algorithms in Rust" />
   
 
 <meta name="author" content="Tianyi Shi" />
@@ -31,8 +31,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black" />
   
   
-<link rel="prev" href="sequence-alignment.html"/>
-
+<link rel="prev" href="index.html"/>
+<link rel="next" href="sequence-alignment.html"/>
 <script src="libs/header-attrs-2.4/header-attrs.js"></script>
 <script src="libs/jquery-2.2.3/jquery.min.js"></script>
 <link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
@@ -102,17 +102,28 @@
           <div class="page-inner">
 
             <section class="normal" id="section-">
-<div id="references" class="section level1 unnumbered" number="">
-<h1>References</h1>
+<div id="introduction" class="section level1 unnumbered" number="">
+<h1>Introduction</h1>
+<div id="organsation-of-the-source-code" class="section level2 unnumbered" number="">
+<h2>Organsation of the Source Code</h2>
+<ul>
+<li>Organised into this hierarchical order: <code>category/[subcategory]/problem/solution.rs</code>, where each <code>problem</code> usually have multiple <code>solution</code>s, ranging from “naïve” ones to advanced, practical ones.</li>
+<li>Implementation details will be documented thoroughly in rustdoc (may be reorganised into a <strong>mdbook</strong> in the future). The documentation should guide the readers to implement the algorithms themselves.</li>
+<li>Most solutions have corresponding original literature, and readers are encouraged to read them.</li>
+<li>Comments in the source code will be verbose.</li>
+<li>Clarity is more important than efficiency (although an optimised solution will be provided for each problem)</li>
+<li>All functions, structs, etc. are made public so that you can play around with them easily, but it should be emphasized again that you should not depend on any part of this repository for your development. Use <strong>rust-bio</strong> instead.</li>
+</ul>
 
+</div>
 </div>
             </section>
 
           </div>
         </div>
       </div>
-<a href="sequence-alignment.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
-
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="sequence-alignment.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
     </div>
   </div>
 <script src="libs/gitbook-2.6.7/js/app.min.js"></script>
