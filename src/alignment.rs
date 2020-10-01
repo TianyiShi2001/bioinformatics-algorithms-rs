@@ -18,4 +18,3 @@
 pub mod distance;
 pub mod pairwise;
 pub mod scores;
-pub use bio_types::alignment::*;

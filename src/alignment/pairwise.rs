@@ -17,6 +17,7 @@
 
 //! The Pairwise Alignment Problem
 //pub mod myers_miller;
+pub mod myers_miller;
 pub mod needleman_wunsch_1;
 pub mod needleman_wunsch_2;
 pub mod smith_waterman_1;
@@ -49,7 +50,7 @@ impl fmt::Display for AlignmentOperation {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum AlignmentMode {
     Global,
     Semiglobal,
@@ -68,6 +69,47 @@ pub struct Alignment<'a> {
     pub operations: Vec<AlignmentOperation>,
     pub mode: AlignmentMode,
 }
+
+impl PartialEq for Alignment<'_> {
+    /// Two alignments are equivalent if their
+    ///
+    /// - sequences
+    /// - score
+    /// - start/end positions on both sequences
+    /// - alignment mode
+    ///
+    /// are equal, and the number of inserts, deletes, matches, mismatches each are equal
+    fn eq(&self, other: &Self) -> bool {
+        if !(self.x == other.x
+            && self.y == other.y
+            && self.score == other.score
+            && self.xstart == other.xstart
+            && self.xend == other.xend
+            && self.ystart == other.ystart
+            && self.yend == other.yend
+            && self.mode == other.mode)
+        {
+            return false;
+        }
+        let (o1, o2) = (&self.operations, &other.operations);
+        if o1.len() != o2.len() {
+            return false;
+        }
+        let (mut i, mut d, mut s, mut m) = (0usize, 0usize, 0usize, 0usize);
+        for o in o1 {
+            match o {
+                AlignmentOperation::Insert => i += 1,
+                AlignmentOperation::Delete => d += 1,
+                AlignmentOperation::Mismatch => s += 1,
+                AlignmentOperation::Match => m += 1,
+                _ => unreachable!(),
+            }
+        }
+        i == 0 && d == 0 && s == 0 && m == 0
+    }
+}
+
+impl Eq for Alignment<'_> {}
 
 pub trait GlobalAlign {
     fn global<'a>(&self, x: Seq<'a>, y: Seq<'a>) -> Alignment<'a>;
@@ -199,7 +241,7 @@ use std::i32;
 /// adding two negative infinities. Use ~ `0.4 * i32::MIN`
 pub const MIN_SCORE: i32 = -858_993_459;
 
-/// Trait required to instantiate a Scoring instance
+/// Trait required to instantiate a MatchFunc instance
 pub trait MatchFunc {
     fn score(&self, a: u8, b: u8) -> i32;
 }
@@ -240,7 +282,7 @@ impl MatchFunc for MatchParams {
     }
 }
 
-/// The trait Matchfunc is also implemented for Fn(u8, u8) -> i32 so that Scoring
+/// The trait Matchfunc is also implemented for Fn(u8, u8) -> i32 so that MatchFunc
 /// can be instantiated using closures and custom user defined functions
 impl<F> MatchFunc for F
 where
@@ -248,5 +290,66 @@ where
 {
     fn score(&self, a: u8, b: u8) -> i32 {
         (self)(a, b)
+    }
+}
+
+/// Details of scoring are encapsulated in this structure.
+///
+/// An [affine gap score model](https://en.wikipedia.org/wiki/Gap_penalty#Affine)
+/// is used so that the gap score for a length `k` is:
+/// `GapScore(k) = gap_open + gap_extend * k`
+#[derive(Debug, Clone)]
+pub struct Scoring<F: MatchFunc> {
+    pub gap_open: i32,
+    pub gap_extend: i32,
+    pub match_fn: F,
+}
+
+impl Scoring<MatchParams> {
+    /// Create new Scoring instance with given gap open, gap extend penalties
+    /// match and mismatch scores. The clip penalties are set to `MIN_SCORE` by default
+    ///
+    /// # Arguments
+    ///
+    /// * `gap_open` - the score for opening a gap (should not be positive)
+    /// * `gap_extend` - the score for extending a gap (should not be positive)
+    /// * `match_score` - the score for a match
+    /// * `mismatch_score` - the score for a mismatch
+    pub fn from_scores(
+        gap_open: i32,
+        gap_extend: i32,
+        match_score: i32,
+        mismatch_score: i32,
+    ) -> Self {
+        assert!(gap_open <= 0, "gap_open can't be positive");
+        assert!(gap_extend <= 0, "gap_extend can't be positive");
+
+        Scoring {
+            gap_open,
+            gap_extend,
+            match_fn: MatchParams::new(match_score, mismatch_score),
+        }
+    }
+}
+
+impl<F: MatchFunc> Scoring<F> {
+    /// Create new Scoring instance with given gap open, gap extend penalties
+    /// and the score function. The clip penalties are set to [`MIN_SCORE`](constant.MIN_SCORE.html) by default
+    ///
+    /// # Arguments
+    ///
+    /// * `gap_open` - the score for opening a gap (should not be positive)
+    /// * `gap_extend` - the score for extending a gap (should not be positive)
+    /// * `match_fn` - function that returns the score for substitutions
+    ///    (see also [`bio::alignment::pairwise::Scoring`](struct.Scoring.html))
+    pub fn new(gap_open: i32, gap_extend: i32, match_fn: F) -> Self {
+        assert!(gap_open <= 0, "gap_open can't be positive");
+        assert!(gap_extend <= 0, "gap_extend can't be positive");
+
+        Scoring {
+            gap_open,
+            gap_extend,
+            match_fn,
+        }
     }
 }
