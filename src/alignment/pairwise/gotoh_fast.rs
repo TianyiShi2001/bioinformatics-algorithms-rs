@@ -6,7 +6,9 @@
 #![allow(non_snake_case)]
 use crate::alignment::pairwise::MIN_SCORE;
 use crate::alignment::pairwise::{traceback::*, MatchFunc, Scoring};
-use crate::alignment::pairwise::{Alignment, AlignmentMode, AlignmentOperation, GlobalAlign};
+use crate::alignment::pairwise::{
+    Alignment, AlignmentMode, AlignmentOperation, GlobalAlign, LocalAlign, SemiglobalAlign,
+};
 use crate::utils::Seq;
 
 pub struct Aligner<F: MatchFunc> {
@@ -32,8 +34,8 @@ impl<F: MatchFunc> GlobalAlign for Aligner<F> {
     /// ```
     fn global<'a>(&self, x: Seq<'a>, y: Seq<'a>) -> Alignment<'a> {
         let (m, n) = (x.len() + 1, y.len() + 1);
-        let mut S = vec![0; m]; //                                            ! 32 * m bits
-        let mut D = vec![MIN_SCORE; m]; //                                    ! 32 * m bits
+        let mut S = vec![0; n]; //                                            ! 32 * m bits
+        let mut D = vec![MIN_SCORE; n]; //                                    ! 32 * m bits
         let mut T: Vec<TracebackCell> = vec![TracebackCell::new(); n * m]; // ! 8 * n * m bits
         let mut s: i32; // S[i - 1][j - 1] or S[i - 1][j]
         let mut c: i32; // S[i][j - 1] or S[i][j]
@@ -138,6 +140,113 @@ impl<F: MatchFunc> GlobalAlign for Aligner<F> {
                 yend: n - 1,
                 operations,
                 mode: AlignmentMode::Global,
+            }
+        }
+    }
+}
+
+impl<F: MatchFunc> LocalAlign for Aligner<F> {
+    fn local<'a>(&self, x: Seq<'a>, y: Seq<'a>) -> Alignment<'a> {
+        let (m, n) = (x.len() + 1, y.len() + 1);
+        let mut S = vec![0; n]; //                                            ! 32 * m bits
+        let mut D = vec![MIN_SCORE; n]; //                                    ! 32 * m bits
+        let mut T: Vec<TracebackCell> = vec![TracebackCell::new(); n * m]; // ! 8 * n * m bits
+        let mut s: i32;
+        let mut c: i32;
+        let mut e: i32;
+        let mut idx: usize = n - 1;
+        let mut x_i: &u8; // TODO: is not using p/q faster?
+        let mut y_j: &u8;
+        let mut S_j: &mut i32;
+        let mut D_j: &mut i32;
+        let mut score_1: i32;
+        let mut score_2: i32;
+        let mut max_score: i32 = i32::MIN;
+        let mut max_coords: [usize; 2] = [0, 0];
+
+        unsafe {
+            // all cells in the first row can be the origin
+            for i in 1..m {
+                s = 0;
+                c = 0;
+                // *S.get_unchecked_mut(0) =  0; // unchanged
+                e = i32::MIN;
+                // D[0] = t will not be read
+                idx += 1;
+                *T.get_unchecked_mut(idx) = TracebackCell::new(); // T[j * m + 0] // all cells in the first column can be the origin
+                x_i = x.get_unchecked(i - 1);
+                for j in 1..n {
+                    y_j = y.get_unchecked(j - 1);
+                    S_j = S.get_unchecked_mut(j);
+                    D_j = D.get_unchecked_mut(j);
+                    let mut tb = TracebackCell::new();
+
+                    score_1 = e + self.scoring.gap_extend;
+                    score_2 = c + self.scoring.gap_open + self.scoring.gap_extend;
+                    e = if score_1 > score_2 {
+                        tb.set_i_bits(TB_LEFT);
+                        score_1
+                    } else {
+                        tb.set_i_bits(T.get_unchecked(idx).get_s_bits()); // T[i-1][j]
+                        score_2
+                    };
+
+                    idx += 1; // ! update idx
+
+                    score_1 = *D_j + self.scoring.gap_extend;
+                    score_2 = *S_j + self.scoring.gap_open + self.scoring.gap_extend;
+                    *D_j = if score_1 > score_2 {
+                        tb.set_d_bits(TB_UP);
+                        score_1
+                    } else {
+                        tb.set_d_bits(T.get_unchecked(idx - n).get_s_bits()); //T[i][j-1]
+                        score_2
+                    };
+
+                    c = s + self.scoring.match_fn.score(*x_i, *y_j);
+                    tb.set_s_bits(TB_DIAG); // no need to be exact at this stage
+
+                    if e > c {
+                        c = e;
+                        tb.set_s_bits(TB_LEFT);
+                    }
+
+                    if *D_j > c {
+                        c = *D_j;
+                        tb.set_s_bits(TB_UP);
+                    }
+
+                    if c < 0 {
+                        c = 0;
+                        tb = TracebackCell::new(); // reset origin
+                    }
+
+                    if c >= max_score {
+                        max_score = c;
+                        max_coords = [i, j];
+                    }
+
+                    s = *S_j;
+                    *S_j = c;
+                    *T.get_unchecked_mut(idx) = tb;
+                }
+            }
+
+            let (xend, yend) = (max_coords[0], max_coords[1]);
+
+            let (mut operations, xstart, ystart) = Self::traceback(&T, x, y, xend, yend, m);
+
+            operations.reverse();
+            Alignment {
+                x,
+                y,
+                score: max_score,
+                xstart,
+                ystart,
+                xend,
+                yend,
+                operations,
+                mode: AlignmentMode::Local,
             }
         }
     }
