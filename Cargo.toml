@@ -8,7 +8,7 @@ edition = "2018"
 
 [dependencies]
 rayon = "1.4.0"
-nalgebra = "0.22"
+nalgebra = "0.24"
 
 [dev-dependencies.cargo-husky]
 version = "1"
